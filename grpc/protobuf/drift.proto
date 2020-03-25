@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package userpb;
+
+//import "google/protobuf/timestamp.proto";
+
+
+message HelloRequest {
+}
+
+message HelloResponse {
+    string message = 1;
+}
+
+message DeployInfoRequest {
+}
+
+message DeployInfoResponse {
+    repeated string available_routes = 1;
+    string gitCurrentBranch = 2;
+    string name = 3;
+    string pythonVersion = 4;
+    string version = 5;
+}
+
+message MetricsRequest {
+    string model_name = 1;
+    int32 model_version = 2;
+    string training = 3;
+    string deployment = 4;
+}
+
+
+enum decision {
+    THERE_IS_NO_CHANGE = 0;
+    THERE_IS_A_CHANGE = 1;
+}
+
+enum status {
+    FAILED = 0;
+    SUCCEEDED = 1;
+}
+message Test {
+    decision final_decision = 1;
+    status test_status = 2;
+    repeated decision decisions = 3;
+    repeated float metrics = 4;
+    repeated float p_values = 5;
+    string name = 6;
+}
+
+message MetricsResponse {
+    repeated Test tests = 1;
+    decision final_decision = 2;
+}
+
+service DriftDetectorService {
+    rpc hello (HelloRequest) returns (HelloResponse) {
+    };
+
+    rpc deployInfo (DeployInfoRequest) returns (DeployInfoResponse) {
+    };
+
+    rpc metrics (MetricsRequest) returns (MetricsResponse) {
+    };
+}

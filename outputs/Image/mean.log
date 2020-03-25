@@ -1,0 +1,175 @@
+report-logger -- 2019-10-25 16:52:35,159 -- data_type:Image, stats_type1:brisque, test_type:two_sample_t_test, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [-1.0840061024798806], 'p_value': [0.2817799784589665], 'decision': ['there is no change']}
+report-logger -- 2019-10-25 18:05:09,629 -- data_type:Image, stats_type1:brisque, test_type:two_sample_t_test, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [-1.0840061024798806], 'p_value': [0.2817799784589665], 'decision': ['there is no change']}
+report-logger -- 2019-10-25 18:07:21,181 -- data_type:Image, stats_type1:brisque, test_type:two_sample_t_test, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [-1.0840061024798806], 'p_value': [0.2817799784589665], 'decision': ['there is no change']}
+report-logger -- 2019-10-25 18:08:07,489 -- data_type:Image, stats_type1:brisque, test_type:two_sample_t_test, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [-1.0840061024798806], 'p_value': [0.2817799784589665], 'decision': ['there is no change']}
+report-logger -- 2019-10-25 20:50:02,583 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [1.0272104580773873], 'p_value': [0.3133105292968441], 'decision': ['there is no change']}
+report-logger -- 2019-10-25 20:50:53,586 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [1.0272104580773873], 'p_value': [0.3133105292968441], 'decision': ['there is no change']}
+report-logger -- 2019-10-25 20:59:18,988 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [1.0272104580773873], 'p_value': [0.3133105292968441], 'decision': ['there is no change']}
+report-logger -- 2019-10-25 21:09:30,925 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [0.0372492374756197], 'p_value': [0.8469590462320931], 'decision': ['there is no change']}
+report-logger -- 2019-10-28 14:26:03,226 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [1.0272104580773873], 'p_value': [0.3133105292968441], 'decision': ['there is no change']}
+report-logger -- 2019-10-28 14:27:06,129 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [1.0272104580773873], 'p_value': [0.3133105292968441], 'decision': ['there is no change']}
+report-logger -- 2019-10-28 14:27:23,070 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [1.0272104580773873], 'p_value': [0.3133105292968441], 'decision': ['there is no change']}
+plots_logger -- 2019-10-28 14:39:23,405 -- data:mnist, plot_file_name:../graphs/mnist__brisque.png
+plots_logger -- 2019-10-28 14:39:23,751 -- data:generated_mnist_overlap, plot_file_name:../graphs/generated_mnist_overlap__brisque.png
+plots_logger -- 2019-10-28 14:39:23,968 -- data:generated_mnist, plot_file_name:../graphs/generated_mnist__brisque.png
+report-logger -- 2019-10-28 14:39:24,045 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [1.0272104580773873], 'p_value': [0.3133105292968441], 'decision': ['there is no change']}
+plots_logger -- 2019-10-28 16:09:22,048 -- data:mnist, plot_file_name:../graphs/mnist__brisque (0).png
+plots_logger -- 2019-10-28 16:12:34,417 -- data:generated_mnist_overlap, plot_file_name:../graphs/generated_mnist_overlap__brisque (0).png
+plots_logger -- 2019-10-28 16:12:34,717 -- data:generated_mnist, plot_file_name:../graphs/generated_mnist__brisque (0).png
+report-logger -- 2019-10-28 16:12:34,851 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [0.0372492374756197], 'p_value': [0.8469590462320931], 'decision': ['there is no change']}
+plots_logger -- 2019-10-29 21:39:03,082 -- data:mnist, plot_file_name:../graphs/mnist__brightness.png
+plots_logger -- 2019-10-29 21:39:05,351 -- data:generated_mnist_overlap, plot_file_name:../graphs/generated_mnist_overlap__brightness.png
+plots_logger -- 2019-10-29 21:39:05,561 -- data:generated_mnist, plot_file_name:../graphs/generated_mnist__brightness.png
+report-logger -- 2019-10-29 21:39:05,649 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [2.8406410463106435], 'p_value': [0.09191199801316019], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 15:14:33,655 -- data:svhn, plot_file_name:../graphs/svhn__brightness.png
+plots_logger -- 2019-10-30 15:14:37,593 -- data:generated_svhn_overlap, plot_file_name:../graphs/generated_svhn_overlap__brightness.png
+plots_logger -- 2019-10-30 15:14:37,815 -- data:generated_svhn, plot_file_name:../graphs/generated_svhn__brightness.png
+report-logger -- 2019-10-30 15:14:37,900 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:svhn, file2:, report:{'metric': [0.007735769381918229], 'p_value': [0.929914032255366], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 15:40:53,412 -- data:svhn, plot_file_name:../graphs/svhn__brightness (0).png
+plots_logger -- 2019-10-30 15:40:56,493 -- data:generated_svhn_overlap, plot_file_name:../graphs/generated_svhn_overlap__brightness (0).png
+plots_logger -- 2019-10-30 15:40:56,718 -- data:generated_svhn, plot_file_name:../graphs/generated_svhn__brightness (0).png
+report-logger -- 2019-10-30 15:40:56,803 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:svhn, file2:, report:{'metric': [0.007735769381918229], 'p_value': [0.929914032255366], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:11:07,078 -- data:usps, plot_file_name:../graphs/usps__brightness.png
+plots_logger -- 2019-10-30 16:11:07,479 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness.png
+plots_logger -- 2019-10-30 16:11:07,724 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness.png
+report-logger -- 2019-10-30 16:11:07,814 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:12:25,951 -- data:usps, plot_file_name:../graphs/usps__brightness (0).png
+plots_logger -- 2019-10-30 16:12:26,358 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (0).png
+plots_logger -- 2019-10-30 16:12:26,606 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (0).png
+report-logger -- 2019-10-30 16:12:26,695 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:14:23,867 -- data:usps, plot_file_name:../graphs/usps__brightness (1).png
+plots_logger -- 2019-10-30 16:14:24,293 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (1).png
+plots_logger -- 2019-10-30 16:14:24,554 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (1).png
+report-logger -- 2019-10-30 16:14:24,645 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:14:32,389 -- data:usps, plot_file_name:../graphs/usps__brightness (2).png
+plots_logger -- 2019-10-30 16:14:32,831 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (2).png
+plots_logger -- 2019-10-30 16:14:37,447 -- data:usps, plot_file_name:../graphs/usps__brightness (3).png
+plots_logger -- 2019-10-30 16:14:37,848 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (3).png
+plots_logger -- 2019-10-30 16:14:38,100 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (3).png
+report-logger -- 2019-10-30 16:14:38,187 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:14:55,166 -- data:usps, plot_file_name:../graphs/usps__brightness (4).png
+plots_logger -- 2019-10-30 16:14:55,596 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (4).png
+plots_logger -- 2019-10-30 16:14:55,846 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (4).png
+report-logger -- 2019-10-30 16:14:55,940 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:15:03,292 -- data:usps, plot_file_name:../graphs/usps__brightness (5).png
+plots_logger -- 2019-10-30 16:15:03,736 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (5).png
+plots_logger -- 2019-10-30 16:15:03,994 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (5).png
+report-logger -- 2019-10-30 16:15:04,089 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:15:10,936 -- data:usps, plot_file_name:../graphs/usps__brightness (6).png
+plots_logger -- 2019-10-30 16:15:11,367 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (6).png
+plots_logger -- 2019-10-30 16:15:11,634 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (6).png
+report-logger -- 2019-10-30 16:15:11,721 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:15:18,794 -- data:usps, plot_file_name:../graphs/usps__brightness (7).png
+plots_logger -- 2019-10-30 16:15:19,224 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (7).png
+plots_logger -- 2019-10-30 16:15:19,499 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (7).png
+report-logger -- 2019-10-30 16:15:19,586 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:15:30,507 -- data:usps, plot_file_name:../graphs/usps__brightness (8).png
+plots_logger -- 2019-10-30 16:15:30,941 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (8).png
+plots_logger -- 2019-10-30 16:15:31,181 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (8).png
+report-logger -- 2019-10-30 16:15:31,268 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:17:13,738 -- data:usps, plot_file_name:../graphs/usps__brightness (9).png
+plots_logger -- 2019-10-30 16:17:14,171 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness (9).png
+plots_logger -- 2019-10-30 16:17:14,409 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness (9).png
+report-logger -- 2019-10-30 16:17:14,502 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+plots_logger -- 2019-10-30 16:19:18,140 -- data:usps, plot_file_name:../graphs/usps__brisque.png
+plots_logger -- 2019-10-30 16:19:42,548 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brisque.png
+plots_logger -- 2019-10-30 16:19:42,795 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brisque.png
+report-logger -- 2019-10-30 16:19:42,900 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:test_split, file1:usps, file2:, report:{'metric': [0.9445907554509184], 'p_value': [0.3311252942033266], 'decision': ['there is no change']}
+fake_data_logger -- 2019-10-30 16:22:45,825 -- removed_class:8, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8590, len_d2:708
+fake_data_logger -- 2019-10-30 16:22:59,349 -- removed_class:1, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8029, len_d2:1269
+fake_data_logger -- 2019-10-30 16:29:34,790 -- removed_class:8, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8590, len_d2:708
+fake_data_logger -- 2019-10-30 16:31:18,654 -- removed_class:4, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8446, len_d2:852
+fake_data_logger -- 2019-10-30 16:31:34,713 -- removed_class:6, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8464, len_d2:834
+fake_data_logger -- 2019-10-30 16:32:14,595 -- removed_class:0, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:7745, len_d2:1553
+fake_data_logger -- 2019-10-30 16:33:08,862 -- removed_class:3, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8474, len_d2:824
+fake_data_logger -- 2019-10-30 16:33:23,027 -- removed_class:2, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8369, len_d2:929
+fake_data_logger -- 2019-10-30 16:34:13,320 -- removed_class:6, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8464, len_d2:834
+fake_data_logger -- 2019-10-30 16:34:24,030 -- removed_class:3, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8474, len_d2:824
+plots_logger -- 2019-10-30 16:35:32,368 -- data:usps, plot_file_name:../graphs/usps__brisque.png
+plots_logger -- 2019-10-30 16:35:39,260 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brisque.png
+plots_logger -- 2019-10-30 16:35:39,507 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brisque.png
+report-logger -- 2019-10-30 16:35:39,596 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:class, file1:usps, file2:, report:{'metric': [533.3968400754695], 'p_value': [8.417118844250608e-115], 'decision': ['there is a change']}
+fake_data_logger -- 2019-10-30 16:36:10,114 -- removed_class:9, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8477, len_d2:821
+plots_logger -- 2019-10-30 16:37:15,785 -- data:usps, plot_file_name:../graphs/usps__brisque (0).png
+plots_logger -- 2019-10-30 16:37:22,260 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brisque (0).png
+plots_logger -- 2019-10-30 16:37:22,502 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brisque (0).png
+report-logger -- 2019-10-30 16:37:22,589 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:class, file1:usps, file2:, report:{'metric': [276.3756980600768], 'p_value': [3.520425452663229e-61], 'decision': ['there is a change']}
+fake_data_logger -- 2019-10-30 16:51:20,174 -- removed_class:7, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:62707, len_d2:7293
+fake_data_logger -- 2019-10-30 16:52:03,850 -- removed_class:7, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:62707, len_d2:7293
+fake_data_logger -- 2019-10-30 16:52:18,374 -- removed_class:9, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:63042, len_d2:6958
+fake_data_logger -- 2019-10-30 16:52:39,233 -- removed_class:4, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:63176, len_d2:6824
+fake_data_logger -- 2019-10-30 16:53:18,008 -- removed_class:0, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:100, len_d2:49
+fake_data_logger -- 2019-10-30 16:53:36,584 -- removed_class:2, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+report-logger -- 2019-10-30 16:53:36,588 -- data_type:Image, stats_type1:same, test_type:anova, read:False, type:class, file1:../data/iris.data, file2:, report:{'metric': [100.13861216402411, 2.3970808014136376, 158.50683268975695, 212.2518678771457], 'p_value': [2.6682251192421497e-18, 0.12371212092118943, 4.0378693819637677e-25, 2.5457486705337346e-30], 'decision': ['there is a change', 'there is no change', 'there is a change', 'there is a change']}
+fake_data_logger -- 2019-10-30 16:58:46,339 -- removed_class:0, classes:[ 1  2  3  4  5  6  7  8  9 10], len_d1:80329, len_d2:18960
+plots_logger -- 2019-10-30 17:09:07,913 -- data:svhn, plot_file_name:../graphs/svhn__brisque.png
+plots_logger -- 2019-10-30 17:11:34,545 -- data:generated_svhn_overlap, plot_file_name:../graphs/generated_svhn_overlap__brisque.png
+plots_logger -- 2019-10-30 17:11:34,794 -- data:generated_svhn, plot_file_name:../graphs/generated_svhn__brisque.png
+report-logger -- 2019-10-30 17:11:34,882 -- data_type:Image, stats_type1:brisque, test_type:anova, read:False, type:class, file1:svhn, file2:, report:{'metric': [1.8999360609028346], 'p_value': [0.16808858184617187], 'decision': ['there is no change']}
+fake_data_logger -- 2019-10-30 18:53:30,334 -- removed_class:3, classes:[ 1  2  3  4  5  6  7  8  9 10], len_d1:89308, len_d2:9981
+plots_logger -- 2019-10-30 18:53:40,841 -- data:svhn, plot_file_name:../graphs/svhn__brightness (1).png
+plots_logger -- 2019-10-30 18:53:42,218 -- data:generated_svhn_overlap, plot_file_name:../graphs/generated_svhn_overlap__brightness (1).png
+plots_logger -- 2019-10-30 18:53:42,467 -- data:generated_svhn, plot_file_name:../graphs/generated_svhn__brightness (1).png
+report-logger -- 2019-10-30 18:53:42,576 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:class, file1:svhn, file2:, report:{'metric': [2.0616663190720095], 'p_value': [0.15104807037907167], 'decision': ['there is no change']}
+fake_data_logger -- 2019-10-30 18:54:30,286 -- removed_class:1, classes:[ 1  2  3  4  5  6  7  8  9 10], len_d1:84555, len_d2:14734
+matplotlib.image -- 2019-10-30 19:02:44,063 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:03:10,597 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:03:50,646 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:04:32,195 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:06:15,936 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:06:25,972 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:07:01,463 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:07:44,328 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:08:57,361 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:09:37,374 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+matplotlib.image -- 2019-10-30 19:10:35,392 -- Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+fake_data_logger -- 2019-10-30 19:12:39,329 -- removed_class:9, classes:[ 1  2  3  4  5  6  7  8  9 10], len_d1:92597, len_d2:6692
+plots_logger -- 2019-10-30 19:12:49,711 -- data:svhn, plot_file_name:../graphs/svhn__brightness (2).png
+plots_logger -- 2019-10-30 19:12:50,554 -- data:generated_svhn_overlap, plot_file_name:../graphs/generated_svhn_overlap__brightness (2).png
+plots_logger -- 2019-10-30 19:12:50,801 -- data:generated_svhn, plot_file_name:../graphs/generated_svhn__brightness (2).png
+report-logger -- 2019-10-30 19:12:50,897 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:class, file1:svhn, file2:, report:{'metric': [8.827371112748352], 'p_value': [0.0029681660904239235], 'decision': ['there is a change']}
+fake_data_logger -- 2019-10-30 19:14:39,852 -- removed_class:0, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:7745, len_d2:1553
+plots_logger -- 2019-10-30 19:14:40,749 -- data:usps, plot_file_name:../graphs/usps__brightness.png
+plots_logger -- 2019-10-30 19:14:41,025 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__brightness.png
+plots_logger -- 2019-10-30 19:14:41,266 -- data:generated_usps, plot_file_name:../graphs/generated_usps__brightness.png
+report-logger -- 2019-10-30 19:14:41,360 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:class, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+fake_data_logger -- 2019-10-30 19:15:06,545 -- removed_class:8, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:8590, len_d2:708
+plots_logger -- 2019-10-30 19:15:07,624 -- data:usps, plot_file_name:../graphs/usps__sharpness.png
+plots_logger -- 2019-10-30 19:15:07,851 -- data:generated_usps_overlap, plot_file_name:../graphs/generated_usps_overlap__sharpness.png
+plots_logger -- 2019-10-30 19:15:08,098 -- data:generated_usps, plot_file_name:../graphs/generated_usps__sharpness.png
+report-logger -- 2019-10-30 19:15:08,195 -- data_type:Image, stats_type1:sharpness, test_type:anova, read:False, type:class, file1:usps, file2:, report:{'metric': [nan], 'p_value': [nan], 'decision': ['there is no change']}
+fake_data_logger -- 2019-10-30 19:18:07,707 -- removed_class:6, classes:[ 1  2  3  4  5  6  7  8  9 10], len_d1:91675, len_d2:7614
+plots_logger -- 2019-10-30 19:18:19,730 -- data:svhn, plot_file_name:../graphs/svhn__sharpness.png
+plots_logger -- 2019-10-30 19:18:20,980 -- data:generated_svhn_overlap, plot_file_name:../graphs/generated_svhn_overlap__sharpness.png
+plots_logger -- 2019-10-30 19:18:21,274 -- data:generated_svhn, plot_file_name:../graphs/generated_svhn__sharpness.png
+report-logger -- 2019-10-30 19:18:21,376 -- data_type:Image, stats_type1:sharpness, test_type:anova, read:False, type:class, file1:svhn, file2:, report:{'metric': [68.13480368917348], 'p_value': [1.5453882930637756e-16], 'decision': ['there is a change']}
+fake_data_logger -- 2019-11-05 21:26:12,559 -- removed_class:1, classes:['1' '2'], len_d1:400, len_d2:400
+fake_data_logger -- 2019-11-05 21:26:53,785 -- removed_class:1, classes:['1' '2'], len_d1:400, len_d2:400
+fake_data_logger -- 2019-11-05 21:28:40,598 -- removed_class:1, classes:['1' '2'], len_d1:400, len_d2:400
+report-logger -- 2019-11-05 21:28:40,600 -- data_type:Image, stats_type1:same, test_type:anova, read:False, type:class, file1:atom, file2:, report:{'metric': [1.3817353705238653, 1.994712467696601, 0.5274725592522409], 'p_value': [0.24015635950157574, 0.15823887012471785, 0.46788435399521155], 'decision': ['there is no change', 'there is no change', 'there is no change']}
+fake_data_logger -- 2019-11-05 21:29:05,166 -- removed_class:0, classes:['1' '2'], len_d1:400, len_d2:400
+report-logger -- 2019-11-05 21:29:05,167 -- data_type:Image, stats_type1:same, test_type:anova, read:False, type:class, file1:atom, file2:, report:{'metric': [1.3817353705238644, 1.994712467696603, 0.5274725592522457], 'p_value': [0.24015635950157574, 0.15823887012471785, 0.46788435399521155], 'decision': ['there is no change', 'there is no change', 'there is no change']}
+fake_data_logger -- 2019-11-05 21:32:07,683 -- removed_class:9, classes:[0 1 2 3 4 5 6 7 8 9], len_d1:63042, len_d2:6958
+plots_logger -- 2019-11-05 21:32:14,145 -- data:mnist, plot_file_name:../graphs/mnist__brightness (0).png
+plots_logger -- 2019-11-05 21:32:14,949 -- data:generated_mnist_overlap, plot_file_name:../graphs/generated_mnist_overlap__brightness (0).png
+plots_logger -- 2019-11-05 21:32:15,194 -- data:generated_mnist, plot_file_name:../graphs/generated_mnist__brightness (0).png
+report-logger -- 2019-11-05 21:32:15,288 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:class, file1:mnist, file2:, report:{'metric': [260.41050030815387], 'p_value': [1.7814239301199154e-58], 'decision': ['there is a change']}
+fake_data_logger -- 2019-11-05 21:37:11,923 -- removed_class:1, classes:['1' '2'], len_d1:400, len_d2:400
+report-logger -- 2019-11-05 21:37:11,924 -- data_type:Image, stats_type1:same, test_type:anova, read:False, type:class, file1:two_diamonds, file2:, report:{'metric': [4935.494201462393, 0.04483006605044058], 'p_value': [0.0, 0.8323708735885558], 'decision': ['there is a change', 'there is no change']}
+fake_data_logger -- 2019-11-05 21:38:10,301 -- removed_class:2, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+report-logger -- 2019-11-05 21:38:10,302 -- data_type:Image, stats_type1:same, test_type:anova, read:False, type:class, file1:iris, file2:, report:{'metric': [100.13861216402411, 2.3970808014136376, 158.50683268975695, 212.2518678771457], 'p_value': [2.6682251192421497e-18, 0.12371212092118943, 4.0378693819637677e-25, 2.5457486705337346e-30], 'decision': ['there is a change', 'there is no change', 'there is a change', 'there is a change']}
+fake_data_logger -- 2019-11-06 21:34:49,913 -- removed_class:2, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+report-logger -- 2019-11-06 21:34:49,914 -- data_type:Image, stats_type1:same, test_type:anova, read:False, type:class, file1:iris, file2:, report:{'metric': [100.13861216402411, 2.3970808014136376, 158.50683268975695, 212.2518678771457], 'p_value': [2.6682251192421497e-18, 0.12371212092118943, 4.0378693819637677e-25, 2.5457486705337346e-30], 'decision': ['there is a change', 'there is no change', 'there is a change', 'there is a change']}
+plots_logger -- 2019-11-12 15:37:24,239 -- data:mnist, plot_file_name:../graphs/mnist__brightness (2).png
+plots_logger -- 2019-11-12 15:37:26,692 -- data:generated_mnist_overlap, plot_file_name:../graphs/generated_mnist_overlap__brightness (2).png
+plots_logger -- 2019-11-12 15:37:26,955 -- data:generated_mnist, plot_file_name:../graphs/generated_mnist__brightness (2).png
+report-logger -- 2019-11-12 15:37:27,059 -- data_type:Image, stats_type1:brightness, test_type:anova, read:False, type:test_split, file1:mnist, file2:, report:{'metric': [2.8406410463106435], 'p_value': [0.09191199801316019], 'decision': ['there is no change']}
+fake_data_logger -- 2019-11-23 19:26:41,365 -- removed_class:0, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:100, len_d2:49
+fake_data_logger -- 2019-11-23 19:26:43,872 -- removed_class:0, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:100, len_d2:49
+fake_data_logger -- 2019-11-23 19:26:46,535 -- removed_class:1, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+fake_data_logger -- 2019-11-23 19:26:49,355 -- removed_class:1, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+fake_data_logger -- 2019-11-23 19:26:52,051 -- removed_class:0, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:100, len_d2:49
+fake_data_logger -- 2019-11-23 19:26:54,469 -- removed_class:2, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+fake_data_logger -- 2019-11-23 19:26:56,937 -- removed_class:1, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+fake_data_logger -- 2019-11-23 19:26:59,373 -- removed_class:1, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
+fake_data_logger -- 2019-11-23 19:27:01,993 -- removed_class:2, classes:['Iris-setosa' 'Iris-versicolor' 'Iris-virginica'], len_d1:99, len_d2:50
