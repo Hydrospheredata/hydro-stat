@@ -19,3 +19,5 @@ opencv-python
 colorthief
 statsmodels
 boto3
+messytables
+seaborn

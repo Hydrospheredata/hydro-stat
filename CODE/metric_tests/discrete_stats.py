@@ -81,7 +81,7 @@ def process_one_feature(s1, s2):
         'unique values': {
             'training': len(list(hist1.keys())),
             'deployment': len(list(hist2.keys())),
-            'change_probability': fall_into(s1, s2)
+            'change_probability': 1 - ordinal_ks(s2, s1)['p_value'][0]
         }
     }
 
