@@ -7,8 +7,9 @@ from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model, ModelVersion
 # from bson import objectid
 # from celery import Celery
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 # from flask_cors import CORS
+from datasets.hydro_data import get_deployment_data, get_training_data
 from interpretability.interpret import interpret, get_types, get_cont, get_disc
 from interpretability.monitor_stats import get_all, get_histograms
 from multiprocessing.pool import ThreadPool
@@ -38,6 +39,9 @@ DEBUG_ENV = bool(os.getenv("DEBUG_ENV", True))
 
 with open("version") as version_file:
     VERSION = version_file.read().strip()
+
+with open("params") as params:
+    THRESHOLD = float(params.read().split(" = ")[1].strip())
 
 tests_to_profiles = {'one_sample_t_test': ('mean', 'same'), 'sign_test': ('median', 'same'),
                      'min_max': ('min_max', 'same'),
@@ -201,7 +205,9 @@ def get_metrics():
              # 'min_max',
              'ks']
     full_report = {}
-    d1, d2 = dataloader.read_datasets(training, deployment)
+    d2 = get_deployment_data(model_name, 1)
+    d1 = get_training_data(model_name, 26)
+    # d1, d2 = dataloader.read_datasets(training, deployment)
     # d1, d2 = dataloader.generate_data(training, 'test_split')
 
     # read feautre names
@@ -252,41 +258,59 @@ def get_metrics():
     return json.loads(json_dump)
 
 
-@app.route("/metrics_unlabelled", methods=["GET"])
-def get_metrics_unlabelled():
-    possible_args = {"model_name", "model_version", "training", "deployment"}
+# @app.route("/metrics_unlabelled", methods=["GET"])
+# def get_metrics_unlabelled():
+#     possible_args = {"model_name", "model_version", "training", "deployment"}
+#     if set(request.args.keys()) != possible_args:
+#         return jsonify({"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
+#     try:
+#         model_name = request.args.get('model_name')
+#         model_version = int(request.args.get('model_version'))
+#         training = request.args.get('training')
+#         deployment = request.args.get('deployment')
+#     except Exception as e:
+#         return jsonify({"message": f"Was unable to cast model_version to int"}), 400
+#
+#     tests = ['two_sample_t_test', 'one_sample_t_test', 'anova', 'mann', 'kruskal',
+#              'levene_mean', 'levene_median', 'levene_trimmed',
+#              'sign_test', 'median_test', 'ks']
+#     full_report = {}
+#
+#     d1, d2 = dataloader.read_datasets_un(training, deployment)
+#
+#     logger.info(d1.shape)
+#     logger.info(d2.shape)
+#     logger.info(d1[1])
+#     pool = ThreadPool(processes=1)
+#     async_results = {}
+#     for test in tests:
+#         async_results[test] = pool.apply_async(one_test, (d1, d2, test))
+#     for test in tests:
+#         full_report[test] = async_results[test].get()
+#
+#     # print(type(full_report))
+#     full_report = final_decision(full_report)
+#     json_dump = json.dumps(full_report, cls=NumpyEncoder)
+#
+#     return json.loads(json_dump)
+
+@app.route("/config", methods=['GET', 'PATCH'])
+def get_params():
+    possible_args = {"threshold"}
     if set(request.args.keys()) != possible_args:
         return jsonify({"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
-    try:
-        model_name = request.args.get('model_name')
-        model_version = int(request.args.get('model_version'))
-        training = request.args.get('training')
-        deployment = request.args.get('deployment')
-    except Exception as e:
-        return jsonify({"message": f"Was unable to cast model_version to int"}), 400
 
-    tests = ['two_sample_t_test', 'one_sample_t_test', 'anova', 'mann', 'kruskal',
-             'levene_mean', 'levene_median', 'levene_trimmed',
-             'sign_test', 'median_test', 'ks']
-    full_report = {}
+    if request.method == 'GET':
+        return jsonify({'threshold': THRESHOLD})
+    elif request.method == "PATCH":
+        THRESHOLD = request.args['threshold']
 
-    d1, d2 = dataloader.read_datasets_un(training, deployment)
+        with open("params", 'w') as params:
+            params.write(f'threshold = {THRESHOLD}')
 
-    logger.info(d1.shape)
-    logger.info(d2.shape)
-    logger.info(d1[1])
-    pool = ThreadPool(processes=1)
-    async_results = {}
-    for test in tests:
-        async_results[test] = pool.apply_async(one_test, (d1, d2, test))
-    for test in tests:
-        full_report[test] = async_results[test].get()
-
-    # print(type(full_report))
-    full_report = final_decision(full_report)
-    json_dump = json.dumps(full_report, cls=NumpyEncoder)
-
-    return json.loads(json_dump)
+        return Response(status=200)
+    else:
+        return Response(status=405)
 
 
 if __name__ == "__main__":

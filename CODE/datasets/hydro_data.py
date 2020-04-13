@@ -3,6 +3,7 @@ import random
 
 import fastparquet
 import pandas as pd
+import requests
 import s3fs
 from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model
@@ -13,7 +14,7 @@ BATCH_SIZE = 10
 FEATURE_LAKE_BUCKET = "feature-lake"
 CLUSTER_URL = "https://hydro-serving.dev.hydrosphere.io"
 MODEL_NAME = "adult_classification"
-MODEL_VERSION = 1
+MODEL_VERSION = 26
 
 fs = s3fs.S3FileSystem()
 
@@ -62,7 +63,24 @@ def get_subsample(model: Model,
         return df
 
 
-cluster = Cluster(CLUSTER_URL)
-model = Model.find(cluster, MODEL_NAME, MODEL_VERSION)
+def get_deployment_data(model_name=MODEL_NAME, model_version=1):
+    cluster = Cluster(CLUSTER_URL)
+    model = Model.find(cluster, model_name, model_version)
+    return get_subsample(model, size=SUBSAMPLE_SIZE, s3fs=fs)
 
-print(get_subsample(model, size=SUBSAMPLE_SIZE, s3fs=fs))
+
+def get_training_data(model_name=MODEL_NAME, model_version=26):
+    cluster = Cluster(CLUSTER_URL)
+    model = Model.find(cluster, model_name, model_version)
+    print(model.id)
+    r = requests.get(f'https://hydro-serving.dev.hydrosphere.io/monitoring/training_data?modelVersionId={model.id}')
+    print(r.text)
+    print(r.status_code)
+    print(r.headers['content-type'])
+    print(pd.read_csv(r.json()[0]))
+    # print(requests.get(f'https://hydro-serving.dev.hydrosphere.io/monitoring/training_data?modelVersionId={model.id}'))
+    # return get_subsample(model, size=SUBSAMPLE_SIZE, s3fs=fs)
+
+
+print(get_training_data())
+print(get_deployment_data())
