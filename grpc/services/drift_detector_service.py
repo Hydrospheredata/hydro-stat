@@ -6,14 +6,13 @@ import logging
 
 import grpc
 from multiprocessing.pool import ThreadPool
-import dataloader
-import profiler
+from datasets import dataloader
+from interpretability import profiler
 from metric_tests import continuous_stats
 import drift_pb2
 import drift_pb2_grpc
 from loguru import logger
 
-from utils.utils import fix_path
 
 os.chdir('../../')
 
@@ -132,6 +131,5 @@ def serve():
 
 
 if __name__ == '__main__':
-    fix_path()
     logging.basicConfig()
     serve()

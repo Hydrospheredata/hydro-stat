@@ -1,10 +1,9 @@
 import json
 import os
 import sys
-from pprint import pprint
 
 from hydrosdk.cluster import Cluster
-from hydrosdk.model import Model, ModelVersion
+from hydrosdk.model import Model
 # from bson import objectid
 # from celery import Celery
 from flask import Flask, request, jsonify, Response
@@ -14,28 +13,23 @@ from interpretability.interpret import interpret, get_types, get_cont, get_disc
 from interpretability.monitor_stats import get_all, get_histograms
 from multiprocessing.pool import ThreadPool
 import numpy as np
-import dataloader
-import profiler
+from interpretability import profiler
 from metric_tests import continuous_stats
 import copy
 # from hydro_serving_grpc.reqstore import reqstore_client
 # from jsonschema import Draft7Validator
 from loguru import logger
 
-# from pymongo import MongoClient
-# from waitress import serve
-#
-# import utils
-# from client import HydroServingClient
+from waitress import serve
+
 
 import warnings
 
 from metric_tests.discrete_stats import process_one_feature
 
 warnings.filterwarnings("ignore")
-from utils.utils import fix_path
 
-DEBUG_ENV = bool(os.getenv("DEBUG_ENV", True))
+DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 
 with open("version") as version_file:
     VERSION = version_file.read().strip()
@@ -82,7 +76,7 @@ def buildinfo():
 
 
 def one_test(d1, d2, name):
-    logger.info(name)
+    # logger.info(name)
     stats_type1, stats_type2 = tests_to_profiles.get(name, ['same', 'same'])
     s1 = profiler.get_statistic(d1, stats_type1, None, 1)
     s2 = profiler.get_statistic(d2, stats_type2, None, 2)
@@ -167,7 +161,6 @@ def per_statistic_change_probability(tests):
     count = [copy.deepcopy({'mean': 0, 'std': 0, 'median': 0, 'general': 0})
              for _ in range(len(
             tests[list(tests.keys())[0]]["decision"]))]
-    print(tests)
     for test_name, test in tests.items():
         if test['status'] == 'succeeded':
             for i, decision in enumerate(test['decision']):
@@ -181,20 +174,14 @@ def per_statistic_change_probability(tests):
     return -1.0 if count == 0 else np.array(probability)
 
 
-def warnings():
-    pass
-
-
 @app.route("/metrics", methods=["GET"])
 def get_metrics():
-    possible_args = {"model_name", "model_version", "training", "deployment"}
+    possible_args = {"model_name", "model_version"}
     if set(request.args.keys()) != possible_args:
         return jsonify({"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
     try:
         model_name = request.args.get('model_name')
         model_version = int(request.args.get('model_version'))
-        training = request.args.get('training')
-        deployment = request.args.get('deployment')
     except Exception as e:
         return jsonify({"message": f"Was unable to cast model_version to int"}), 400
 
@@ -207,27 +194,25 @@ def get_metrics():
     full_report = {}
     d2 = get_deployment_data(model_name, 1)
     d1 = get_training_data(model_name, 26)
-    # d1, d2 = dataloader.read_datasets(training, deployment)
-    # d1, d2 = dataloader.generate_data(training, 'test_split')
-
-    # read feautre names
 
     cluster = Cluster("https://hydro-serving.dev.hydrosphere.io/")
     model = Model.find(cluster, "adult_classification", 1)
     input_fields_names = [field.name for field in model.contract.predict.inputs]
     output_fields_names = [field.name for field in model.contract.predict.outputs]
-    print(input_fields_names + output_fields_names)
-    logger.info(input_fields_names)
+    # logger.info(input_fields_names + output_fields_names)
+    # logger.info(input_fields_names)
+    d1 = d1[input_fields_names]
+    d2 = d2[input_fields_names]
 
-    types1, types2 = get_types(training), get_types(deployment)
-    logger.info(types1)
+    types1, types2 = get_types(d1), get_types(d2)
+    d1 = d1.values
+    d2 = d2.values
     (c1, cf1), (c2, cf2) = get_disc(d1, types1), get_disc(d2, types2)
-
     (d1, f1), (d2, f2) = get_cont(d1, types1), get_cont(d2, types2)
     stats1, stats2 = get_all(d1), get_all(d2)
     historgrams = get_histograms(d1, d2, f1, f2)
-    logger.info(d1.shape)
-    logger.info(d2.shape)
+    # logger.info(d1.shape)
+    # logger.info(d2.shape)
     pool = ThreadPool(processes=1)
     async_results = {}
     for test in tests:
@@ -237,9 +222,9 @@ def get_metrics():
     warnings = {}
     per_statistic_change_probability(full_report)
 
-    logger.info(overall_probability_drift(full_report))
-    logger.info(per_statistic_change_probability(full_report))
-    logger.info(per_feature_change_probability(full_report))
+    # logger.info(overall_probability_drift(full_report))
+    # logger.info(per_statistic_change_probability(full_report))
+    # logger.info(per_feature_change_probability(full_report))
     final_report = {}
 
     final_report['per_feature_report'] = fix(f1, stats1, historgrams, stats2,
@@ -250,49 +235,13 @@ def get_metrics():
     warnings['final_decision'] = final_decision(full_report)
     warnings['report'] = interpret(final_report['per_feature_report'])
     final_report['warnings'] = warnings
-    for trc, depc, namec in zip(c1, c2, cf1):
-        final_report['per_feature_report'][namec] = process_one_feature(trc, depc)
-    # pprint(final_report)
+    if cf1 and len(cf1) > 0:
+        for trc, depc, namec in zip(c1, c2, cf1):
+            final_report['per_feature_report'][namec] = process_one_feature(trc, depc)
     json_dump = json.dumps(final_report, cls=NumpyEncoder)
 
     return json.loads(json_dump)
 
-
-# @app.route("/metrics_unlabelled", methods=["GET"])
-# def get_metrics_unlabelled():
-#     possible_args = {"model_name", "model_version", "training", "deployment"}
-#     if set(request.args.keys()) != possible_args:
-#         return jsonify({"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
-#     try:
-#         model_name = request.args.get('model_name')
-#         model_version = int(request.args.get('model_version'))
-#         training = request.args.get('training')
-#         deployment = request.args.get('deployment')
-#     except Exception as e:
-#         return jsonify({"message": f"Was unable to cast model_version to int"}), 400
-#
-#     tests = ['two_sample_t_test', 'one_sample_t_test', 'anova', 'mann', 'kruskal',
-#              'levene_mean', 'levene_median', 'levene_trimmed',
-#              'sign_test', 'median_test', 'ks']
-#     full_report = {}
-#
-#     d1, d2 = dataloader.read_datasets_un(training, deployment)
-#
-#     logger.info(d1.shape)
-#     logger.info(d2.shape)
-#     logger.info(d1[1])
-#     pool = ThreadPool(processes=1)
-#     async_results = {}
-#     for test in tests:
-#         async_results[test] = pool.apply_async(one_test, (d1, d2, test))
-#     for test in tests:
-#         full_report[test] = async_results[test].get()
-#
-#     # print(type(full_report))
-#     full_report = final_decision(full_report)
-#     json_dump = json.dumps(full_report, cls=NumpyEncoder)
-#
-#     return json.loads(json_dump)
 
 @app.route("/config", methods=['GET', 'PATCH'])
 def get_params():
@@ -314,9 +263,8 @@ def get_params():
 
 
 if __name__ == "__main__":
-    fix_path()
     if not DEBUG_ENV:
-        # serve(app, host='0.0.0.0', port=5000)
+        serve(app, host='0.0.0.0', port=5000)
         pass
     else:
         app.run(debug=True, host='0.0.0.0', port=5000)

@@ -27,18 +27,17 @@ To deploy the rest api, please follow the next steps:
 1. Download and the run the metric_eval container which will use the port 5000 for the service.
 
     ```bash
-    docker run -p 5000:5000 imadeddinebek/metric_eval:0.4.1
+    docker build -t provectus/hydro_stat:0.0.1 .
+    docker run -p 5000:5000 provectus/hydro_stat:0.0.1
     ```
 2. Send the following http request:
     ```http
-    http://0.0.0.0:5000/metrics?model_name=mnist-classifier&model_version=1&training=iris&deployment=iris
+    http://0.0.0.0:5000/metrics?model_name=adult_classification&model_version=1
     ```
 please specify the following values in your http request:
 
-* model_name (ignored for now)
-* model_version (ignored for now)
-* training
-* deployment
+* model_name
+* model_version 
 
 (ignored for now): will add an implementation which will take only the model's name and version
  and extract on its own the training and deployment data.

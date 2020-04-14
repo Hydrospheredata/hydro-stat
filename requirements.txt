@@ -4,9 +4,7 @@ Pillow
 pandas
 loguru
 Flask
-nose
 requests
-scikit-image
 grpcio-tools
 hydro-serving-grpc==2.1.0rc1
 python-dotenv
@@ -16,8 +14,9 @@ jsonschema
 waitress
 cpbd
 opencv-python
-colorthief
 statsmodels
 boto3
 messytables
 seaborn
+fastparquet
+s3fs
