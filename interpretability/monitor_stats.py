@@ -32,10 +32,10 @@ def get_all(data):
     medians = median(data)
     # modes = mode(data)
     stds = std(data)
-    # print(data.shape)
-    # print(means.shape)
-    # print(medians.shape)
-    # print(stds.shape)
+    # logger.info(data.shape)
+    # logger.info(means.shape)
+    # logger.info(medians.shape)
+    # logger.info(stds.shape)
     stats = {'means': means,
              'stds': stds,
              'medians': medians}

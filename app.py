@@ -88,9 +88,9 @@ def one_test(d1, d2, name):
 def final_decision(full_report):
     count_pos = 0
     count_neg = 0
-    # pprint(full_report)
+    # plogger.info(full_report)
     for key, log in full_report.items():
-        # pprint(log)
+        # plogger.info(log)
         if log['status'] == 'succeeded':
             if list(log['decision']).count("there is no change") > len(log['decision']) // 2:
                 log['final_decision'] = 'there is no change'

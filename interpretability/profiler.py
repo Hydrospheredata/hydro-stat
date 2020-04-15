@@ -65,7 +65,7 @@ def converter(s1, func):
         x = s1
     values = []
     for img in x:
-        # print("not here")
+        # logger.info("not here")
         try:
             values.append(func(img))
         except:

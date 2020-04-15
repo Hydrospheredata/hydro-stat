@@ -102,11 +102,11 @@ def parse_logs(file):
                         test = message[2].split(':')[1]
                         data = message[5].split(':')[1]
                         p_value = message[-1].split(':')[1]
-                        # print(message[-1].replace('report:', '').replace("'", "\""))
+                        # logger.info(message[-1].replace('report:', '').replace("'", "\""))
                         message = json.loads(message[-1].replace('report:', '').replace("'", "\""))
                         one_log['data']['data'] = data
                         one_log['results']['test'] = test
-                        # print(message.get('metric', []), message.get('p_value', []))
+                        # logger.info(message.get('metric', []), message.get('p_value', []))
                         one_log['results']['metric'] = message.get('metric', [])
                         one_log['results']['metric'] = message.get('metric', [])
                         one_log['results']['decision'] = message.get('decision', [])
@@ -125,7 +125,7 @@ def parse_logs(file):
 def filter(all_logs, test):
     filtered_logs = []
     for log in all_logs:
-        # pprint(log)
+        # plogger.info(log)
         if log['results']['test'] in test:
             filtered_logs.append(log)
 
@@ -138,7 +138,7 @@ def accuracy_bar_plot(logs, file):
     labels_one = []
     labels_all = []
     for log in logs:
-        # pprint(log)
+        # plogger.info(log)
         if log['data']['type'] in ('class', 'cluster'):
             labels.append(1)
         else:
@@ -159,11 +159,11 @@ def accuracy_bar_plot(logs, file):
             labels_maj.append(1)
         else:
             labels_maj.append(0)
-    # print(len(labels))
-    # print(len(logs))
-    print(accuracy_score(labels, labels_all))
-    print(accuracy_score(labels, labels_maj))
-    print(accuracy_score(labels, labels_one))
+    # logger.info(len(labels))
+    # logger.info(len(logs))
+    logger.info(accuracy_score(labels, labels_all))
+    logger.info(accuracy_score(labels, labels_maj))
+    logger.info(accuracy_score(labels, labels_one))
 
     eval_funcs = [accuracy_score, precision_score, recall_score, f1_score]
 
@@ -177,14 +177,14 @@ def successful_logs(logs):
     result = []
     for log in logs:
         if log['status'] == 'Success':
-            # print(log['results']['metric'])
+            # logger.info(log['results']['metric'])
             for met in log['results']['metric']:
                 if np.isnan(met):
-                    print(met)
+                    logger.info(met)
                 if np.float(met) == 'nan':
                     float(met)
                     continue
-                # print(str(met))
+                # logger.info(str(met))
             result.append(log)
     return result
 
@@ -228,7 +228,7 @@ def plot(all_res, maj_res, one_res):
 
 
 def plot_density(test, clas, cluster, train=False):
-    print(test,clas)
+    logger.info(test,clas)
     sns.distplot(test, hist=True, kde=True,
                  hist_kws={'edgecolor': 'black'},
                  kde_kws={'linewidth': 4}, label='no DD')
@@ -256,7 +256,7 @@ def split(logs):
     clas = []
     cluster = []
     for log in logs:
-        # pprint(log)
+        # plogger.info(log)
         if log['data']['type'] =='test_split':
             if not np.isnan(np.mean(log['results']['metric']) ):
                 test.append(np.mean(log['results']['metric']))
@@ -280,10 +280,10 @@ if __name__ == '__main__':
 
     file = 'a_dist'
     logs = successful_logs(logs)
-    # pprint(logs)
+    # plogger.info(logs)
     logs = filter(logs, file)
-    # pprint(logs)
+    # plogger.info(logs)
     test, clas, cluster = split(logs)
     plot_density(test, clas, None)
-    # pprint(logs)
+    # plogger.info(logs)
     # accuracy_bar_plot(logs, file + '.png')

@@ -1,4 +1,5 @@
 import math
+import os
 import random
 
 import fastparquet
@@ -12,11 +13,10 @@ SUBSAMPLE_SIZE = 100
 BATCH_SIZE = 10
 
 FEATURE_LAKE_BUCKET = "feature-lake"
-CLUSTER_URL = "https://hydro-serving.dev.hydrosphere.io"
+CLUSTER_URL = "https://hydro-serving.dev.hydrosphere.io"  # str(os.getenv("HTTP_UI_ADDRESS", "https://hydro-serving.dev.hydrosphere.io"))
 MODEL_NAME = "adult_classification"
 MODEL_VERSION = 26
-
-fs = s3fs.S3FileSystem()
+S3_ENDPOINT = os.getenv("S3_ENDPOINT")
 
 
 def get_subsample(model: Model,
@@ -66,11 +66,17 @@ def get_subsample(model: Model,
 def get_deployment_data(model_name=MODEL_NAME, model_version=1):
     cluster = Cluster(CLUSTER_URL)
     model = Model.find(cluster, model_name, model_version)
+    fs = s3fs.S3FileSystem(client_kwargs={'endpoint_url': S3_ENDPOINT})
     return get_subsample(model, size=SUBSAMPLE_SIZE, s3fs=fs)
 
 
 def get_training_data(model_name=MODEL_NAME, model_version=26):
+    s3 = s3fs.S3FileSystem(client_kwargs={'endpoint_url': S3_ENDPOINT})
     cluster = Cluster(CLUSTER_URL)
     model = Model.find(cluster, model_name, model_version)
-    r = requests.get(f'https://hydro-serving.dev.hydrosphere.io/monitoring/training_data?modelVersionId={model.id}')
-    return pd.read_csv(r.json()[0])
+
+    s3_training_data_path = requests.get(f"{CLUSTER_URL}/training_data?modelVersionId={model.id}").json()[0]
+
+    training_data = pd.read_csv(s3.open(s3_training_data_path, mode='rb'))
+
+    return training_data

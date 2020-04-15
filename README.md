@@ -15,6 +15,20 @@ Please follow the instructions to get an up and running version of our code runn
 Detecting Domain Drifts between training and deployment data.
 
 
+## Environment variables to configure service while deploying
+Addresses to other services:
+* `HTTP_UI_ADDRESS` - http address of hydro-serving cluster, used to create `hydrosdk.Cluster(HS_CLUSTER_ADDRESS)`
+
+
+AWS/Minio parameters:
+* `AWS_ACCESS_KEY_ID`
+* `AWS_SECRET_ACCESS_KEY`
+* `S3_ENDPOINT`, if no s3 endpoint is present, data will be downloaded with boto3
+
+Flask server parameters:
+* `APPLICATION_ROOT` - prefix of all routes specified in [hydro_auto_od_openapi.yaml](hydro-auto-od-openapi.yaml), not used right now
+* `DEBUG`
+
 ## APIs
 
 Here you will find the way to deploy and use both the rest api.
@@ -230,7 +244,7 @@ Here is an example of the resulting json string to show the difference between c
 }
 ```
 
-The rest api responds to 3 types of requests:
+The rest api responds to 4 types of requests:
 
 1. Hello request: basic test to verify that the service is up and running.
     ```http
@@ -265,6 +279,8 @@ The rest api responds to 3 types of requests:
     http://0.0.0.0:5000/metrics?model_name=<MODEL_NAME>&model_version=<MODEL_VERSION>&training=<S3_FILE>&deployment=<S3_FILE>
     ```
     Please check the example response above.
+    
+4. config request: This allows you to change the config params
 
 ## License
 
