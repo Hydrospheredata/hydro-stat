@@ -8,6 +8,7 @@ import requests
 import s3fs
 from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model
+from loguru import logger
 
 SUBSAMPLE_SIZE = 100
 BATCH_SIZE = 10
@@ -74,8 +75,8 @@ def get_training_data(model_name=MODEL_NAME, model_version=26):
     s3 = s3fs.S3FileSystem(client_kwargs={'endpoint_url': S3_ENDPOINT})
     cluster = Cluster(CLUSTER_URL)
     model = Model.find(cluster, model_name, model_version)
-
-    s3_training_data_path = requests.get(f"{CLUSTER_URL}/training_data?modelVersionId={model.id}").json()[0]
+    logger.info('Molde Id: {}'.format(model.id))
+    s3_training_data_path = requests.get(f"{CLUSTER_URL}/monitoring/training_data?modelVersionId={model.id}").json()[0]
 
     training_data = pd.read_csv(s3.open(s3_training_data_path, mode='rb'))
 

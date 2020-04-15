@@ -45,8 +45,8 @@ def get_all(data):
 def _get_histogram(t, d, bins__=20, i=0, title=None):
     r1 = min(t.min(), d.min())
     r2 = max(t.max(), d.max())
-    n, bins, _ = plt.hist(t, bins=bins__, normed=True, range=[r1, r2], label='training', alpha=0.6)
-    n_, _, _ = plt.hist(d, bins=bins, normed=True, range=[r1, r2], label='deployment', alpha=0.4)
+    n, bins, _ = plt.hist(t, bins=bins__, density=True, range=[r1, r2], label='training', alpha=0.6)
+    n_, _, _ = plt.hist(d, bins=bins, density=True, range=[r1, r2], label='deployment', alpha=0.4)
 
     plt.title('feature {}'.format(i) if title is None else title)
     plt.legend()
