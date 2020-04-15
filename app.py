@@ -22,7 +22,8 @@ import warnings
 
 from metric_tests.discrete_stats import process_one_feature
 
-warnings.filterwarnings("ignore")
+
+
 
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 
@@ -238,7 +239,7 @@ def get_metrics():
     return json.loads(json_dump)
 
 
-@app.route("/config", methods=['GET', 'PATCH'])
+@app.route("/config", methods=['GET', 'PUT'])
 def get_params():
     possible_args = {"THRESHOLD"}
     if set(request.args.keys()) != possible_args:
@@ -247,10 +248,11 @@ def get_params():
     if request.method == 'GET':
         return jsonify({'THRESHOLD': THRESHOLD})
 
-    elif request.method == "PATCH":
-
+    elif request.method == "PUT":
+        logger.info('THRESHOLD changed from {} to {}'.format(THRESHOLD, request.args['THRESHOLD']))
         with open("params.json", 'w') as params:
-            params.write(f'threshold = ' + str(request.args['THRESHOLD']))
+            params_dict = {"THRESHOLD": request.args['THRESHOLD']}
+            json.dump(params_dict, params)
 
         return Response(status=200)
     else:
