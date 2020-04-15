@@ -1,13 +1,10 @@
-import json
 import os
 import sys
 
 from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model
-# from bson import objectid
-# from celery import Celery
 from flask import Flask, request, jsonify, Response
-# from flask_cors import CORS
+from flask_cors import CORS
 from datasets.hydro_data import get_deployment_data, get_training_data
 from interpretability.interpret import interpret, get_types, get_cont, get_disc
 from interpretability.monitor_stats import get_all, get_histograms
@@ -16,12 +13,10 @@ import numpy as np
 from interpretability import profiler
 from metric_tests import continuous_stats
 import copy
-# from hydro_serving_grpc.reqstore import reqstore_client
-# from jsonschema import Draft7Validator
+import json
 from loguru import logger
 
 from waitress import serve
-
 
 import warnings
 
@@ -34,8 +29,9 @@ DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 with open("version") as version_file:
     VERSION = version_file.read().strip()
 
-with open("params") as params:
-    THRESHOLD = float(params.read().split(" = ")[1].strip())
+with open("params.json") as params:
+    data = json.load(params)
+    THRESHOLD = data['THRESHOLD']
 
 tests_to_profiles = {'one_sample_t_test': ('mean', 'same'), 'sign_test': ('median', 'same'),
                      'min_max': ('min_max', 'same'),
@@ -53,8 +49,7 @@ class NumpyEncoder(json.JSONEncoder):
 
 app = Flask(__name__)
 
-
-# CORS(app, expose_headers=['location'])
+CORS(app)
 
 
 @app.route("/", methods=['GET'])
@@ -245,17 +240,17 @@ def get_metrics():
 
 @app.route("/config", methods=['GET', 'PATCH'])
 def get_params():
-    possible_args = {"threshold"}
+    possible_args = {"THRESHOLD"}
     if set(request.args.keys()) != possible_args:
         return jsonify({"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
 
     if request.method == 'GET':
-        return jsonify({'threshold': THRESHOLD})
-    elif request.method == "PATCH":
-        THRESHOLD = request.args['threshold']
+        return jsonify({'THRESHOLD': THRESHOLD})
 
-        with open("params", 'w') as params:
-            params.write(f'threshold = {THRESHOLD}')
+    elif request.method == "PATCH":
+
+        with open("params.json", 'w') as params:
+            params.write(f'threshold = ' + str(request.args['THRESHOLD']))
 
         return Response(status=200)
     else:
@@ -265,6 +260,5 @@ def get_params():
 if __name__ == "__main__":
     if not DEBUG_ENV:
         serve(app, host='0.0.0.0', port=5000)
-        pass
     else:
         app.run(debug=True, host='0.0.0.0', port=5000)
