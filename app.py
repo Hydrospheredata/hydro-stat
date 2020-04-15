@@ -22,17 +22,14 @@ import warnings
 
 from metric_tests.discrete_stats import process_one_feature
 
-
-
-
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 
 with open("version") as version_file:
     VERSION = version_file.read().strip()
 
-with open("params.json") as params:
-    data = json.load(params)
-    THRESHOLD = data['THRESHOLD']
+# with open("params.json") as params:
+# data = json.load(params)
+THRESHOLD = 0.1  # data['THRESHOLD']
 
 tests_to_profiles = {'one_sample_t_test': ('mean', 'same'), 'sign_test': ('median', 'same'),
                      'min_max': ('min_max', 'same'),
@@ -241,18 +238,19 @@ def get_metrics():
 
 @app.route("/config", methods=['GET', 'PUT'])
 def get_params():
-    possible_args = {"THRESHOLD"}
-    if set(request.args.keys()) != possible_args:
-        return jsonify({"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
-
     if request.method == 'GET':
         return jsonify({'THRESHOLD': THRESHOLD})
 
     elif request.method == "PUT":
+        possible_args = {"THRESHOLD"}
+        if set(request.args.keys()) != possible_args:
+            return jsonify(
+                {"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
+
         logger.info('THRESHOLD changed from {} to {}'.format(THRESHOLD, request.args['THRESHOLD']))
-        with open("params.json", 'w') as params:
-            params_dict = {"THRESHOLD": request.args['THRESHOLD']}
-            json.dump(params_dict, params)
+        # with open("params.json", 'w') as params:
+        #     params_dict = {"THRESHOLD": request.args['THRESHOLD']}
+        #     json.dump(params_dict, params)
 
         return Response(status=200)
     else:
