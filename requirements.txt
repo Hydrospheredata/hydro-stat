@@ -8,15 +8,11 @@ requests
 grpcio-tools
 hydro-serving-grpc==2.1.0rc1
 python-dotenv
-supervisor
 flask_cors
 jsonschema
 waitress
-cpbd
-opencv-python
 statsmodels
 boto3
 messytables
-seaborn
 fastparquet
 s3fs

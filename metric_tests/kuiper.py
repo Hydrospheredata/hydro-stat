@@ -3,8 +3,6 @@ import numpy as np
 from numpy import copy, sort, amax, arange, exp, sqrt, abs, floor, searchsorted
 from scipy.special import factorial, comb
 import itertools
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 def kuiper_FPP(D, N):
@@ -128,7 +126,7 @@ def kuiper(data, cdf=lambda x: x, args=()):
 
     """
 
-    # FIXME: doesn't work for distributions that are actually discrete (for example Poisson).
+    # FIXME: doesn'training_data work for distributions that are actually discrete (for example Poisson).
     data = sort(data)
     cdfv = cdf(data, *args)
     N = len(data)
@@ -168,11 +166,11 @@ def kuiper_two(data1, data2):
     cdfv1 = searchsorted(data2, data1) / float(len(data2))  # this could be more efficient
     cdfv2 = searchsorted(data1, data2) / float(len(data1))  # this could be more efficient
 
-    plot_density(cdfv1,cdfv2)
-    plt.plot(np.arange(len(cdfv1)) / len(cdfv1), cdfv1,label='me')
-    plt.plot(np.arange(len(cdfv2)) / len(cdfv2), cdfv2,label='you')
-    plt.legend()
-    plt.show()
+    # plot_density(cdfv1,cdfv2)
+    # plt.plot(np.arange(len(cdfv1)) / len(cdfv1), cdfv1,label='me')
+    # plt.plot(np.arange(len(cdfv2)) / len(cdfv2), cdfv2,label='you')
+    # plt.legend()
+    # plt.show()
     D = (amax(cdfv1 - arange(len(data1)) / float(len(data1))) +
          amax(cdfv2 - arange(len(data2)) / float(len(data2))))
 
@@ -181,26 +179,27 @@ def kuiper_two(data1, data2):
 
 
 def plot_density(test, clas, cluster, train=False):
-    sns.distplot(test, hist=True, kde=True,
-                 hist_kws={'edgecolor': 'black'},
-                 kde_kws={'linewidth': 4}, label='no DD')
-
-    sns.distplot(clas, hist=True, kde=True,
-                 hist_kws={'edgecolor': 'black'},
-                 kde_kws={'linewidth': 4}, label='DD')
-
-    # sns.distplot(cluster, hist=True, kde=True,
+    # sns.distplot(test, hist=True, kde=True,
     #              hist_kws={'edgecolor': 'black'},
-    #              kde_kws={'linewidth': 4}, label='cluster_removal')
-    if train:
-        plt.title('Train dist of losses of inliers and outliers')
-    else:
-        plt.title('distribution of mean metric values for '+ file)
-    plt.xlabel('metric value')
-    plt.ylabel('Probability density')
-    plt.legend()
-    # experiment.log_figure(figure=plt)
-    plt.show()
+    #              kde_kws={'linewidth': 4}, label='no DD')
+    #
+    # sns.distplot(clas, hist=True, kde=True,
+    #              hist_kws={'edgecolor': 'black'},
+    #              kde_kws={'linewidth': 4}, label='DD')
+    #
+    # # sns.distplot(cluster, hist=True, kde=True,
+    # #              hist_kws={'edgecolor': 'black'},
+    # #              kde_kws={'linewidth': 4}, label='cluster_removal')
+    # if train:
+    #     plt.title('Train dist of losses of inliers and outliers')
+    # else:
+    #     plt.title('distribution of mean metric values for '+ file)
+    # plt.xlabel('metric value')
+    # plt.ylabel('Probability density')
+    # plt.legend()
+    # # experiment.log_figure(figure=plt)
+    # plt.show()
+    pass
 
 def a_distance_two(data1, data2):
     """Compute the Kuiper statistic to compare two samples.

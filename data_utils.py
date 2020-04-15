@@ -1,23 +1,16 @@
 import math
-import os
 import random
 
 import fastparquet
 import pandas as pd
 import requests
 import s3fs
-from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model
-from loguru import logger
 
-SUBSAMPLE_SIZE = 100
-BATCH_SIZE = 10
+from app import HTTP_UI_ADDRESS
 
 FEATURE_LAKE_BUCKET = "feature-lake"
-CLUSTER_URL = "https://hydro-serving.dev.hydrosphere.io"  # str(os.getenv("HTTP_UI_ADDRESS", "https://hydro-serving.dev.hydrosphere.io"))
-MODEL_NAME = "adult_classification"
-MODEL_VERSION = 26
-S3_ENDPOINT = os.getenv("S3_ENDPOINT")
+BATCH_SIZE = 10
 
 
 def get_subsample(model: Model,
@@ -64,20 +57,7 @@ def get_subsample(model: Model,
         return df
 
 
-def get_deployment_data(model_name=MODEL_NAME, model_version=1):
-    cluster = Cluster(CLUSTER_URL)
-    model = Model.find(cluster, model_name, model_version)
-    fs = s3fs.S3FileSystem(client_kwargs={'endpoint_url': S3_ENDPOINT})
-    return get_subsample(model, size=SUBSAMPLE_SIZE, s3fs=fs)
-
-
-def get_training_data(model_name=MODEL_NAME, model_version=26):
-    s3 = s3fs.S3FileSystem(client_kwargs={'endpoint_url': S3_ENDPOINT})
-    cluster = Cluster(CLUSTER_URL)
-    model = Model.find(cluster, model_name, model_version)
-    logger.info('Molde Id: {}'.format(model.id))
-    s3_training_data_path = requests.get(f"{CLUSTER_URL}/monitoring/training_data?modelVersionId={model.id}").json()[0]
-
-    training_data = pd.read_csv(s3.open(s3_training_data_path, mode='rb'))
-
+def get_training_data(model: Model, fs: s3fs.S3FileSystem):
+    s3_training_data_path = requests.get(f"{HTTP_UI_ADDRESS}/monitoring/training_data?modelVersionId={model.id}").json()[0]
+    training_data = pd.read_csv(fs.open(s3_training_data_path, mode='rb'))
     return training_data
