@@ -3,7 +3,7 @@ import json
 import os
 import sys
 from multiprocessing.pool import ThreadPool
-
+import subprocess
 import numpy as np
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
@@ -13,12 +13,19 @@ from loguru import logger
 from pandas.io.s3 import s3fs
 from waitress import serve
 
-from data_utils import get_training_data, get_subsample
 from interpretability import profiler
 from interpretability.interpret import interpret, get_types, get_cont, get_disc
 from interpretability.monitor_stats import get_all, get_histograms
 from metric_tests import continuous_stats
 from metric_tests.discrete_stats import process_one_feature
+import math
+import random
+
+import fastparquet
+import pandas as pd
+import requests
+import s3fs
+from hydrosdk.model import Model
 
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 
@@ -27,7 +34,7 @@ with open("version") as version_file:
 
 THRESHOLD = 0.1
 
-SUBSAMPLE_SIZE = 1000
+SUBSAMPLE_SIZE = 100
 BATCH_SIZE = 10
 
 HTTP_UI_ADDRESS = os.getenv("HTTP_UI_ADDRESS", "https://hydro-serving.dev.hydrosphere.io")
@@ -51,6 +58,60 @@ app = Flask(__name__)
 
 CORS(app)
 
+FEATURE_LAKE_BUCKET = "feature-lake"
+BATCH_SIZE = 10
+
+
+def get_subsample(model: Model,
+                  size: int,
+                  s3fs: s3fs.S3FileSystem,
+                  undersampling=False) -> pd.DataFrame:
+    """
+    Return a random subsample of request-response pairs from an S3 feature lake.
+
+
+    :param undersampling: If True, returns subsample of size = min(available samples, size),
+    if False and number of samples stored in feature lake < size then raise an Exception
+    :param size: Number of requests\response pairs in subsample
+    :type batch_size: Number of requests stored in each parquet file
+    """
+
+    number_of_parquets_needed = math.ceil(size / BATCH_SIZE)
+
+    model_feature_store_path = f"s3://{FEATURE_LAKE_BUCKET}/{model.name}/{model.version}"
+
+    parquets_paths = s3fs.find(model_feature_store_path)
+
+    if len(parquets_paths) < number_of_parquets_needed:
+        if not undersampling:
+            raise ValueError(
+                f"This model doesn't have {size} requests in feature lake.\n"
+                f"Right now there are {len(parquets_paths) * BATCH_SIZE} requests stored.")
+        else:
+            number_of_parquets_needed = len(parquets_paths)
+
+    selected_batch_paths = random.sample(parquets_paths, number_of_parquets_needed)
+
+    input_fields_names = [field.name for field in model.contract.predict.inputs]
+    output_fields_names = [field.name for field in model.contract.predict.outputs]
+    columns_to_use = input_fields_names + output_fields_names
+
+    dataset = fastparquet.ParquetFile(selected_batch_paths, open_with=s3fs.open)
+
+    df: pd.DataFrame = dataset.to_pandas(columns=columns_to_use)
+
+    if df.shape[0] > size:
+        return df.sample(n=size)
+    else:
+        return df
+
+
+def get_training_data(model: Model, fs: s3fs.S3FileSystem):
+    s3_training_data_path = \
+        requests.get(f"{HTTP_UI_ADDRESS}/monitoring/training_data?modelVersionId={model.id}").json()[0]
+    training_data = pd.read_csv(fs.open(s3_training_data_path, mode='rb'))
+    return training_data
+
 
 @app.route("/", methods=['GET'])
 def hello():
@@ -59,14 +120,15 @@ def hello():
 
 @app.route("/buildinfo", methods=['GET'])
 def buildinfo():
-    branch_name = "metric_evaluation"  # check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("utf8").strip()
+    branch_name = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("utf8").strip()
+    HEAD_COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf8").strip()
     py_version = sys.version
     return jsonify({"version": VERSION,
                     "name": "domain-drift",
                     "pythonVersion": py_version,
                     "gitCurrentBranch": branch_name,
                     "available_routes": ["/buildinfo", "/", "/metrics"],
-                    # "gitHeadCommit": HEAD_COMMIT
+                    "gitHeadCommit": HEAD_COMMIT
                     })
 
 
@@ -172,7 +234,7 @@ def get_metrics():
     try:
         model_name = request.args.get('model_name')
         model_version = int(request.args.get('model_version'))
-    except Exception as e:
+    except:
         return jsonify({"message": f"Was unable to cast model_version to int"}), 400
 
     tests = ['two_sample_t_test', 'one_sample_t_test', 'anova',
@@ -181,7 +243,7 @@ def get_metrics():
              'sign_test', 'median_test',
              # 'min_max',
              'ks']
-
+    logger.info("Metrics for model {} version {}".format(model_name, model_version))
     fs = s3fs.S3FileSystem(client_kwargs={'endpoint_url': S3_ENDPOINT})
 
     cluster = Cluster(HTTP_UI_ADDRESS)
@@ -201,7 +263,7 @@ def get_metrics():
     (c1, cf1), (c2, cf2) = get_disc(d1, types1), get_disc(d2, types2)
     (d1, f1), (d2, f2) = get_cont(d1, types1), get_cont(d2, types2)
     stats1, stats2 = get_all(d1), get_all(d2)
-    histograms = get_histograms(d1, d2, f1, f2)
+    histograms = get_histograms(d1, d2, f1)
 
     full_report = {}
     pool = ThreadPool(processes=1)
@@ -224,7 +286,8 @@ def get_metrics():
 
     if cf1 and len(cf1) > 0:
         for training_feature, deployement_feature, feature_name in zip(c1, c2, cf1):
-            final_report['per_feature_report'][feature_name] = process_one_feature(training_feature, deployement_feature)
+            final_report['per_feature_report'][feature_name] = process_one_feature(training_feature,
+                                                                                   deployement_feature)
 
     json_dump = json.dumps(final_report, cls=NumpyEncoder)
     return json.loads(json_dump)
