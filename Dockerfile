@@ -17,6 +17,7 @@ RUN pip3 install -r requirements.txt
 
 RUN git clone https://github.com/Hydrospheredata/hydro-serving-sdk.git
 WORKDIR hydro-serving-sdk/
+RUN git checkout 134b50bedeb4187929ede47966a4fb52fcb7483b
 RUN python ./setup.py install
 WORKDIR ..
 
@@ -24,8 +25,8 @@ COPY . /app
 WORKDIR /app
 
 
-#ENV AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
-#ENV AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+ENV AWS_ACCESS_KEY_ID=AKIA5XGMCUEIBWOEGK47
+ENV AWS_SECRET_ACCESS_KEY=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
 
 
 EXPOSE 5000

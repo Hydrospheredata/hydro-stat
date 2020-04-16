@@ -46,7 +46,7 @@ To deploy the rest api, please follow the next steps:
     ```
 2. Send the following http request:
     ```http
-    http://0.0.0.0:5000/metrics?model_name=adult_classification&model_version=1
+    http://0.0.0.0:5000/metrics?model_name=adult_classification&model_version=86
     ```
 please specify the following values in your http request:
 
