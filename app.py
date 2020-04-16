@@ -240,7 +240,6 @@ def get_metrics():
              'mann', 'kruskal', 'levene_mean',
              'levene_median', 'levene_trimmed',
              'sign_test', 'median_test',
-             # 'min_max',
              'ks']
     logger.info("Metrics for model {} version {}".format(model_name, model_version))
     fs = s3fs.S3FileSystem(client_kwargs={'endpoint_url': S3_ENDPOINT})
