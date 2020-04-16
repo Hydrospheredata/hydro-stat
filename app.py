@@ -43,6 +43,8 @@ S3_ENDPOINT = os.getenv("S3_ENDPOINT")
 tests_to_profiles = {'one_sample_t_test': ('mean', 'same'), 'sign_test': ('median', 'same'),
                      'min_max': ('min_max', 'same'),
                      'hull': ('delaunay', 'same')}
+FEATURE_LAKE_BUCKET = "feature-lake"
+BATCH_SIZE = 10
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -57,9 +59,6 @@ class NumpyEncoder(json.JSONEncoder):
 app = Flask(__name__)
 
 CORS(app)
-
-FEATURE_LAKE_BUCKET = "feature-lake"
-BATCH_SIZE = 10
 
 
 def get_subsample(model: Model,
