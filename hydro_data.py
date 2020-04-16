@@ -16,7 +16,7 @@ BATCH_SIZE = 10
 FEATURE_LAKE_BUCKET = "feature-lake"
 CLUSTER_URL = "https://hydro-serving.dev.hydrosphere.io"  # str(os.getenv("HTTP_UI_ADDRESS", "https://hydro-serving.dev.hydrosphere.io"))
 MODEL_NAME = "adult_classification"
-MODEL_VERSION = 26
+MODEL_VERSION = 86
 S3_ENDPOINT = os.getenv("S3_ENDPOINT")
 
 

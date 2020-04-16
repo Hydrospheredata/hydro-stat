@@ -8,7 +8,6 @@ requests
 grpcio-tools
 hydro-serving-grpc==2.1.0rc1
 python-dotenv
-supervisor
 flask_cors
 jsonschema
 waitress
