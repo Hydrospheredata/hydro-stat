@@ -32,7 +32,7 @@ DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 with open("version") as version_file:
     VERSION = version_file.read().strip()
 
-THRESHOLD = 0.1
+THRESHOLD = 0.01
 
 SUBSAMPLE_SIZE = 100
 BATCH_SIZE = 10
@@ -293,6 +293,7 @@ def get_metrics():
 
 @app.route("/config", methods=['GET', 'PUT'])
 def get_params():
+    global THRESHOLD
     if request.method == 'GET':
         return jsonify({'THRESHOLD': THRESHOLD})
 
@@ -303,7 +304,7 @@ def get_params():
                 {"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
 
         logger.info('THRESHOLD changed from {} to {}'.format(THRESHOLD, request.args['THRESHOLD']))
-
+        THRESHOLD = float(request.args['THRESHOLD'])
         return Response(status=200)
     else:
         return Response(status=405)
