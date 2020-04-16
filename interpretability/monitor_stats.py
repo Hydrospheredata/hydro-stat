@@ -7,32 +7,12 @@ from scipy.stats import entropy as ent
 
 # import numpy as np
 
-# TODO remove these custom functions
-def mean(data):
-    return np.mean(data, axis=0)
-
-
-def std(data):
-    return np.std(data, axis=0)
-
-
-def median(data):
-    return np.median(data, axis=0)
-
-
-def mode(data):
-    return statistics.mode(data, axis=0)
-
-
-def entropy(data):
-    return ent(data, axis=0)
-
 
 def get_all(data):
-    means = mean(data)
-    medians = median(data)
+    means = np.mean(data, axis=0)
+    medians = np.median(data, axis=0)
     # modes = mode(data)
-    stds = std(data)
+    stds = np.std(data, axis=0)
 
     stats = {'means': means,
              'stds': stds,
