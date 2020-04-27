@@ -1,8 +1,12 @@
-from scipy import stats
-from statsmodels.stats.descriptivestats import sign_test
-from scipy.spatial import Delaunay
 import numpy as np
-from metric_tests.kuiper import kuiper_two, a_distance_two
+from scipy import stats
+from scipy.spatial import Delaunay
+from statsmodels.stats.descriptivestats import sign_test
+
+from hydro_stat.kuiper import kuiper_two, a_distance_two
+
+# TODO fetch from app.py or better get as an argument
+THRESHOLD = 0.1
 
 
 def fall_in(ss1, ss2):
@@ -103,7 +107,7 @@ def test(s1, s2, test_type, config=None):
                 if config:
                     results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=config.proportiontocut)
                 else:
-                    results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=0.01)
+                    results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=THRESHOLD)
 
                 metrics.append(results[0])
                 p_values.append(results[1])
@@ -184,7 +188,8 @@ def test(s1, s2, test_type, config=None):
                                   report['metric']]
 
         if 'p_value' in report.keys():
-            report['decision'] = ['there is a change' if p < 0.01 else 'there is no change' for p in report['p_value']]
+            report['decision'] = ['there is a change' if p < THRESHOLD else 'there is no change' for p in
+                                  report['p_value']]
 
         if not isinstance(report.get('p_value', []), list):
             report['p_value'] = report['p_value'].tolist()
