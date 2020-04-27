@@ -1,24 +1,8 @@
-# Metric Evaluation for Domain Drift Detection 
-Python Implementation of Metric Evaluation for Domain Drift Detection 
-## Contributors 
-
-* Imad Eddine Ibrahim Bekkouch ibekkouch@provectus.com
-
-Provectus
-
-Innopolis 
-
-## Getting Started
-Please follow the instructions to get an up and running version of our code running on your local machine.
-
-## Problem 
-Detecting Domain Drifts between training and deployment data.
-
+Detecting domain drifts between training and production data using featurewise statistics.
 
 ## Environment variables to configure service while deploying
 Addresses to other services:
 * `HTTP_UI_ADDRESS` - http address of hydro-serving cluster, used to create `hydrosdk.Cluster(HS_CLUSTER_ADDRESS)`
-
 
 AWS/Minio parameters:
 * `AWS_ACCESS_KEY_ID`
@@ -29,32 +13,9 @@ Flask server parameters:
 * `APPLICATION_ROOT` - prefix of all routes specified in [hydro_auto_od_openapi.yaml](hydro-auto-od-openapi.yaml), not used right now
 * `DEBUG`
 
-## APIs
 
-Here you will find the way to deploy and use both the rest api.
-
-### Rest api
-The rest api uses http requests and reponds in json format.
-
-To deploy the rest api, please follow the next steps:
-
-1. Download and the run the metric_eval container which will use the port 5000 for the service.
-
-    ```bash
-    docker build -t provectus/hydro_stat:0.0.1 .
-    docker run -p 5000:5000 provectus/hydro_stat:0.0.1
-    ```
-2. Send the following http request:
-    ```http
-    http://0.0.0.0:5000/metrics?model_name=adult_classification&model_version=86
-    ```
-please specify the following values in your http request:
-
-* model_name
-* model_version 
-
-(ignored for now): will add an implementation which will take only the model's name and version
- and extract on its own the training and deployment data.
+## API
+[GET] /metrics?model_version_id=123
 
 
 3. The JSON response will contain the following:
@@ -243,45 +204,3 @@ Here is an example of the resulting json string to show the difference between c
   }
 }
 ```
-
-The rest api responds to 4 types of requests:
-
-1. Hello request: basic test to verify that the service is up and running.
-    ```http
-        http://0.0.0.0:5000/
-    ```
-    the response will be the following: 
-    ```text
-    Hi! I am Domain Drift Service
-    ```
-
-2. build_info request: returns a set of information about the service.
-    ```http
-        http://0.0.0.0:5000/buildinfo
-    ```
-    the response will be the similar to the following json structure: 
-    ```json
-        {
-      "available_routes": [
-        "/buildinfo",
-        "/",
-        "/metrics"
-      ],
-      "gitCurrentBranch": "metric_evaluation",
-      "name": "domain-drift",
-      "pythonVersion": "3.7.4 (default, Oct 17 2019, 06:26:55) \n[GCC 6.3.0 20170516]",
-      "version": "0.0.1"
-         }
-    ```
-    
-3. drift_detection request: This is the main request provided by the service.
-    ```http
-    http://0.0.0.0:5000/metrics?model_name=<MODEL_NAME>&model_version=<MODEL_VERSION>&training=<S3_FILE>&deployment=<S3_FILE>
-    ```
-    Please check the example response above.
-    
-4. config request: This allows you to change the config params
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
