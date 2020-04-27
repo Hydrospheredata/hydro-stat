@@ -1,8 +1,9 @@
 import numpy as np
 
-from metric_tests import continuous_stats
 from sklearn import preprocessing
 from scipy.stats import entropy
+
+from hydro_stat import continious
 
 
 def nominal_histogram(data):
@@ -42,7 +43,7 @@ def ordinal_ks(ordinal1, ordinal2, mapping=None):
     else:
         ordering = lambda t: mapping[t]
     vfunc = np.vectorize(ordering)
-    return continuous_stats.test(vfunc(ordinal1), vfunc(ordinal2), 'kruskal')
+    return continious.test(vfunc(ordinal1), vfunc(ordinal2), 'kruskal')
 
 
 def clean(param):
@@ -63,9 +64,9 @@ def fix(hist1, hist2):
     return keys, counts1, counts2
 
 
-def process_one_feature(s1, s2):
-    hist1 = nominal_histogram(s1)
-    hist2 = nominal_histogram(s2)
+def process_feature(training_data, production_data):
+    hist1 = nominal_histogram(training_data)
+    hist2 = nominal_histogram(production_data)
     bins, train, dep = fix(hist1, hist2)
 
     histogram = {'bins': bins, 'deployment': dep, 'training': train}
@@ -73,16 +74,16 @@ def process_one_feature(s1, s2):
         'entropy': {
             'training': entropy(list(hist1.values()), base=2),
             'deployment': entropy(list(hist2.values()), base=2),
-            'change_probability': 1 - ordinal_ks(s2, s1)['p_value'][0]
+            'change_probability': 1 - ordinal_ks(production_data, training_data)['p_value'][0]
         },
         'unique values': {
             'training': len(list(hist1.keys())),
             'deployment': len(list(hist2.keys())),
-            'change_probability': 1 - ordinal_ks(s2, s1)['p_value'][0]
+            'change_probability': 1 - ordinal_ks(production_data, training_data)['p_value'][0]
         }
     }
 
-    feature = {'drift-probability': 1 - ordinal_ks(s2, s1)['p_value'][0], 'histogram': histogram, 'statistics': stats}
+    feature = {'drift-probability': 1 - ordinal_ks(production_data, training_data)['p_value'][0], 'histogram': histogram, 'statistics': stats}
     return feature
 
 

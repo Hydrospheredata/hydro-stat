@@ -1,10 +1,12 @@
-from scipy import stats
-from statsmodels.stats.descriptivestats import sign_test
-from scipy.spatial import Delaunay
 import numpy as np
+from scipy import stats
+from scipy.spatial import Delaunay
+from statsmodels.stats.descriptivestats import sign_test
 
-from app import THRESHOLD
-from metric_tests.kuiper import kuiper_two, a_distance_two
+from hydro_stat.kuiper import kuiper_two, a_distance_two
+
+# TODO fetch from app.py or better get as an argument
+THRESHOLD = 0.1
 
 
 def fall_in(ss1, ss2):
