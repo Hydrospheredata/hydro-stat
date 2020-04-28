@@ -1,10 +1,10 @@
 import json
 import os
-import subprocess
-import sys
 from multiprocessing.pool import ThreadPool
 
+import git
 import numpy as np
+import sys
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from hydrosdk.cluster import Cluster
@@ -15,20 +15,26 @@ from waitress import serve
 from hydro_stat.discrete import process_feature
 from hydro_stat.interpret import interpret, get_types, get_cont, get_disc
 from hydro_stat.monitor_stats import get_all, get_histograms
-from stat_analysis import one_test, per_statistic_change_probability, fix, per_feature_change_probability, final_decision, \
+from stat_analysis import one_test, per_statistic_change_probability, fix, per_feature_change_probability, \
+    final_decision, \
     overall_probability_drift
 
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 
 with open("version") as version_file:
     VERSION = version_file.read().strip()
-
-branch_name = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("utf8").strip()
-HEAD_COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf8").strip()
+    repo = git.Repo(".")
+    BUILD_INFO = {
+        "version": VERSION,
+        "name": "hydro-stat",
+        "pythonVersion": sys.version,
+        "gitCurrentBranch": repo.active_branch.name,
+        "gitHeadCommit": repo.active_branch.commit.hexsha
+    }
 
 THRESHOLD = 0.01
 
-HTTP_UI_ADDRESS = os.getenv("HTTP_UI_ADDRESS", "https://hydro-serving.dev.hydrosphere.io")
+HTTP_UI_ADDRESS = os.getenv("HTTP_UI_ADDRESS", "http://managerui")
 S3_ENDPOINT = os.getenv("S3_ENDPOINT")
 
 from hydro_stat.utils import get_production_data, get_training_data
@@ -54,12 +60,7 @@ def hello():
 
 @app.route("/buildinfo", methods=['GET'])
 def buildinfo():
-    return jsonify({"version": VERSION,
-                    "name": "hydro-stat",
-                    "pythonVersion": sys.version,
-                    "gitCurrentBranch": branch_name,
-                    "gitHeadCommit": HEAD_COMMIT
-                    })
+    return jsonify(BUILD_INFO)
 
 
 @app.route("/metrics", methods=["GET"])
