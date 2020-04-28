@@ -53,17 +53,17 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/", methods=['GET'])
+@app.route("/stat/health", methods=['GET'])
 def hello():
     return "Hi! I am Domain Drift Service"
 
 
-@app.route("/buildinfo", methods=['GET'])
+@app.route("/stat/buildinfo", methods=['GET'])
 def buildinfo():
     return jsonify(BUILD_INFO)
 
 
-@app.route("/metrics", methods=["GET"])
+@app.route("/stat/metrics", methods=["GET"])
 def get_metrics():
     possible_args = {"model_version_id"}
     if set(request.args.keys()) != possible_args:
@@ -146,7 +146,7 @@ def get_metrics():
     return json.loads(json_dump)
 
 
-@app.route("/config", methods=['GET', 'PUT'])
+@app.route("/stat/config", methods=['GET', 'PUT'])
 def get_params():
     global THRESHOLD
     if request.method == 'GET':

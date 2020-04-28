@@ -18,8 +18,10 @@ ENV STAT_DB_NAME=hydrostat
 
 EXPOSE 5000
 
+HEALTHCHECK CMD curl http://localhost:5000/stat/health
+
 RUN apt-get update && \
-    apt-get install -y -q build-essential git wget \
+    apt-get install -y -q build-essential git curl \
                           libatlas-base-dev libatlas3-base
 
 
