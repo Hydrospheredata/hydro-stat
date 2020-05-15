@@ -1,12 +1,15 @@
 import json
 import os
+import sys
 from multiprocessing.pool import ThreadPool
 
 import git
 import numpy as np
-import sys
+import requests
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
+from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
+    DT_UINT64
 from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model
 from loguru import logger
@@ -20,6 +23,9 @@ from stat_analysis import one_test, per_statistic_change_probability, fix, per_f
     overall_probability_drift
 
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
+HTTP_PORT = bool(os.getenv("HTTP_PORT", 5000))
+
+SUPPORTED_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
 
 with open("version") as version_file:
     VERSION = version_file.read().strip()
@@ -49,6 +55,7 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+hs_cluster = Cluster(HTTP_UI_ADDRESS)
 app = Flask(__name__)
 CORS(app)
 
@@ -61,6 +68,33 @@ def hello():
 @app.route("/stat/buildinfo", methods=['GET'])
 def buildinfo():
     return jsonify(BUILD_INFO)
+
+
+def is_model_supported(model_version: Model):
+    has_training_data = len(requests.get(f"{HTTP_UI_ADDRESS}/monitoring/training_data?modelVersionId={model_version.id}").json()) > 0
+
+    if not has_training_data:
+        return False, "Need uploaded training data"
+
+    signature = model_version.contract.predict
+
+    input_tensor_shapes = [tuple(map(lambda dim: dim.size, input_tensor.shape.dim)) for input_tensor in signature.inputs]
+    if not all([shape == tuple() for shape in input_tensor_shapes]):
+        return False, "Only signatures with all scalar fields are supported"
+
+    input_tensor_dtypes = [input_tensor.dtype for input_tensor in signature.inputs]
+    if not all([dtype in SUPPORTED_DTYPES for dtype in input_tensor_dtypes]):
+        return False, "Only signatures with all numerical fields are supported"
+
+    return True, "OK"
+
+
+@app.route("/stat/support", methods=['GET'])
+def model_support(model_version_id):
+    model_version = Model.find_by_id(hs_cluster, model_version_id)
+    supported, description = is_model_supported(model_version)
+    support_status = {"supported": supported, "description": description}
+    return jsonify(support_status)
 
 
 @app.route("/stat/metrics", methods=["GET"])
@@ -170,6 +204,6 @@ def get_params():
 
 if __name__ == "__main__":
     if not DEBUG_ENV:
-        serve(app, host='0.0.0.0', port=5000)
+        serve(app, host='0.0.0.0', port=HTTP_PORT)
     else:
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(debug=True, host='0.0.0.0', port=HTTP_PORT)
