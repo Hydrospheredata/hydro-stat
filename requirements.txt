@@ -14,5 +14,5 @@ boto3==1.12.24
 messytables==0.15.2
 fastparquet==0.3.2
 s3fs==0.4.0
-git+git://github.com/Hydrospheredata/hydro-serving-sdk.git@134b50bedeb4187929ede47966a4fb52fcb7483b
+hydrosdk==2.3.0rc1
 gitpython~=2.1
