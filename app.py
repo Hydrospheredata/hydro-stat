@@ -90,7 +90,12 @@ def is_model_supported(model_version: Model):
 
 
 @app.route("/stat/support", methods=['GET'])
-def model_support(model_version_id):
+def model_support():
+    try:
+        model_version_id = int(request.args.get('model_version_id'))
+    except:
+        return jsonify({"message": f"Unable to process 'model_version_id' argument"}), 400
+
     model_version = Model.find_by_id(hs_cluster, model_version_id)
     supported, description = is_model_supported(model_version)
     support_status = {"supported": supported, "description": description}
