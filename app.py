@@ -1,6 +1,8 @@
 import json
+import logging
 import os
 import sys
+from logging.config import fileConfig
 from multiprocessing.pool import ThreadPool
 
 import git
@@ -12,7 +14,6 @@ from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE,
     DT_UINT64
 from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model
-from loguru import logger
 from waitress import serve
 
 from hydro_stat.discrete import process_feature
@@ -21,6 +22,8 @@ from hydro_stat.monitor_stats import get_all, get_histograms
 from stat_analysis import one_test, per_statistic_change_probability, fix, per_feature_change_probability, \
     final_decision, \
     overall_probability_drift
+
+fileConfig("logging_config.ini")
 
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 HTTP_PORT = int(os.getenv("HTTP_PORT", 5000))
@@ -118,31 +121,31 @@ def get_metrics():
              'levene_median', 'levene_trimmed',
              'sign_test', 'median_test',
              'ks']
-    logger.info("Metrics for model version id = {}".format(model_version_id))
+    logging.info("Metrics for model version id = {}".format(model_version_id))
 
     try:
         cluster = Cluster(HTTP_UI_ADDRESS)
         model = Model.find_by_id(cluster, model_version_id)
     except Exception as e:
-        logger.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
+        logging.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
 
     input_fields_names = [field.name for field in model.contract.predict.inputs]
     try:
-        logger.info(f"Loading training data. model version id = {model_version_id}")
+        logging.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
         training_data = training_data[input_fields_names]
-        logger.info(f"Finished loading training data. model version id = {model_version_id}")
+        logging.info(f"Finished loading training data. model version id = {model_version_id}")
     except Exception as e:
-        logger.error(f"Failed during loading training data. {e}")
+        logging.error(f"Failed during loading training data. {e}")
         return Response(status=500)
 
     try:
-        logger.info(f"Loading production data. model version id = {model_version_id}")
+        logging.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model)
         production_data = production_data[input_fields_names]
-        logger.info(f"Finished loading production data. model version id = {model_version_id}")
+        logging.info(f"Finished loading production data. model version id = {model_version_id}")
     except Exception as e:
-        logger.error(f"Failed during loading production_data data. {e}")
+        logging.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
 
     try:
@@ -163,7 +166,7 @@ def get_metrics():
             full_report[test] = async_results[test].get()
         per_statistic_change_probability(full_report)
     except Exception as e:
-        logger.error(f"Failed during computing statistics {e}")
+        logging.error(f"Failed during computing statistics {e}")
         return Response(status=500)
 
     final_report = {'per_feature_report': fix(f1, training_statistics, histograms, production_statistics,
@@ -197,7 +200,7 @@ def get_params():
             return jsonify(
                 {"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
 
-        logger.info('THRESHOLD changed from {} to {}'.format(THRESHOLD, request.args['THRESHOLD']))
+        logging.info('THRESHOLD changed from {} to {}'.format(THRESHOLD, request.args['THRESHOLD']))
 
         # TODO use mongo to store configs in there
         THRESHOLD = float(request.args['THRESHOLD'])
