@@ -35,20 +35,25 @@ def final_decision(full_report):
         return 'there is no change'
 
 
-def fix(f, stats, histograms, stats2, per_stat, per_feature):
+def make_per_feature_report(feature_name,
+                            trainings_statistics,
+                            histograms,
+                            deployment_statistics,
+                            change_probability_per_statistic,
+                            drift_probability_per_feature):
     per_feature_report = {}
-    for i, name in enumerate(f):
+    for i, name in enumerate(feature_name):
         histogram = histograms[name]
         stat = {}
-        for statistic_name, values in stats.items():
+        for statistic_name, values in trainings_statistics.items():
             statistic_name = statistic_name[:-1]
             stat[statistic_name] = {}
             stat[statistic_name]['training'] = values[i]
-            stat[statistic_name]['deployment'] = stats2[statistic_name + 's'][i]
-            stat[statistic_name]['change_probability'] = per_stat[i][statistic_name]
+            stat[statistic_name]['deployment'] = deployment_statistics[statistic_name + 's'][i]
+            stat[statistic_name]['change_probability'] = change_probability_per_statistic[i][statistic_name]
 
         per_feature_report[name] = {"histogram": histogram, "statistics": stat,
-                                    "drift-probability": per_feature[i]}
+                                    "drift-probability": drift_probability_per_feature[i]}
     return per_feature_report
 
 

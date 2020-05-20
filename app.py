@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from itertools import compress
 from multiprocessing.pool import ThreadPool
 
 import git
@@ -9,23 +10,24 @@ import requests
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
-    DT_UINT64
+    DT_UINT64, DT_STRING
 from hydrosdk.cluster import Cluster
 from hydrosdk.model import Model
 from loguru import logger
 from waitress import serve
 
 from hydro_stat.discrete import process_feature
-from hydro_stat.interpret import interpret, get_types, get_cont, get_disc
-from hydro_stat.monitor_stats import get_all, get_histograms
-from stat_analysis import one_test, per_statistic_change_probability, fix, per_feature_change_probability, \
+from hydro_stat.interpret import interpret
+from hydro_stat.monitor_stats import get_numerical_statistics, get_histograms
+from stat_analysis import one_test, per_statistic_change_probability, make_per_feature_report, per_feature_change_probability, \
     final_decision, \
     overall_probability_drift
 
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 HTTP_PORT = int(os.getenv("HTTP_PORT", 5000))
 
-SUPPORTED_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
+NUMERICAL_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
+SUPPORTED_DTYPES = NUMERICAL_DTYPES.union({DT_STRING, })
 
 with open("version") as version_file:
     VERSION = version_file.read().strip()
@@ -127,33 +129,41 @@ def get_metrics():
         logger.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
 
     input_fields_names = [field.name for field in model.contract.predict.inputs]
+    input_fields_dtypes = [field.dtype for field in model.contract.predict.inputs]
+
     try:
         logger.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
-        training_data = training_data[input_fields_names]
-        logger.info(f"Finished loading training data. model version id = {model_version_id}")
+        training_data = training_data[input_fields_names].values
     except Exception as e:
         logger.error(f"Failed during loading training data. {e}")
         return Response(status=500)
+    else:
+        logger.info(f"Finished loading training data. model version id = {model_version_id}")
 
     try:
         logger.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model)
-        production_data = production_data[input_fields_names]
-        logger.info(f"Finished loading production data. model version id = {model_version_id}")
+        production_data = production_data[input_fields_names].values
     except Exception as e:
         logger.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
+    else:
+        logger.info(f"Finished loading production data. model version id = {model_version_id}")
 
     try:
-        training_data_types, production_data_types = get_types(training_data), get_types(production_data)
-        training_data, production_data = training_data.values, production_data.values
-        (c1, cf1), (c2, cf2) = get_disc(training_data, training_data_types), get_disc(production_data, production_data_types)
-        (training_data, f1), (production_data, f2) = get_cont(training_data, training_data_types), get_cont(production_data,
-                                                                                                            production_data_types)
-        training_statistics, production_statistics = get_all(training_data), get_all(production_data)
-        histograms = get_histograms(training_data, production_data, f1)
+        # Calculate numerical statistics first
+        numerical_fields = [field_dtype in NUMERICAL_DTYPES for field_dtype in input_fields_dtypes]
+        numerical_fields_names = list(compress(input_fields_names, numerical_fields))
+        numerical_training_data = training_data[:, numerical_fields]
+        numerical_production_data = production_data[:, numerical_fields]
 
+        numerical_training_statistics = get_numerical_statistics(numerical_training_data)
+        numerical_production_statistics = get_numerical_statistics(numerical_production_data)
+
+        histograms = get_histograms(numerical_training_data, numerical_production_data, numerical_fields_names)
+
+        # Run async numerical stat test
         full_report = {}
         pool = ThreadPool(processes=1)
         async_results = {}
@@ -166,20 +176,25 @@ def get_metrics():
         logger.error(f"Failed during computing statistics {e}")
         return Response(status=500)
 
-    final_report = {'per_feature_report': fix(f1, training_statistics, histograms, production_statistics,
-                                              per_statistic_change_probability(full_report),
-                                              per_feature_change_probability(full_report)),
+    final_report = {'per_feature_report': make_per_feature_report(numerical_fields_names, numerical_training_statistics, histograms,
+                                                                  numerical_production_statistics,
+                                                                  per_statistic_change_probability(full_report),
+                                                                  per_feature_change_probability(full_report)),
                     'overall_probability_drift': overall_probability_drift(full_report)}
+
+    # Process discrete string fields
+    string_fields = [field_dtype == DT_STRING for field_dtype in input_fields_dtypes]
+    string_training_data = training_data[:, string_fields]
+    string_production_data = production_data[:, string_fields]
+
+    for training_feature, deployment_feature, feature_name in zip(string_training_data, string_production_data,
+                                                                  list(compress(input_fields_names, string_fields))):
+        final_report['per_feature_report'][feature_name] = process_feature(training_feature, deployment_feature)
 
     warnings = {'final_decision': final_decision(full_report),
                 'report': interpret(final_report['per_feature_report'])}
 
     final_report['warnings'] = warnings
-
-    if cf1 and len(cf1) > 0:
-        for training_feature, deployment_feature, feature_name in zip(c1, c2, cf1):
-            final_report['per_feature_report'][feature_name] = process_feature(training_feature,
-                                                                               deployment_feature)
 
     json_dump = json.dumps(final_report, cls=NumpyEncoder)
     return json.loads(json_dump)
