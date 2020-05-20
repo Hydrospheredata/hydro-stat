@@ -13,3 +13,4 @@ boto3==1.12.24
 s3fs==0.4.0
 hydrosdk==2.3.0rc1
 gitpython~=2.1
+loguru

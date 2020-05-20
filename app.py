@@ -135,19 +135,21 @@ def get_metrics():
         logger.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
         training_data = training_data[input_fields_names].values
-        logger.info(f"Finished loading training data. model version id = {model_version_id}")
     except Exception as e:
         logger.error(f"Failed during loading training data. {e}")
         return Response(status=500)
+    else:
+        logger.info(f"Finished loading training data. model version id = {model_version_id}")
 
     try:
         logger.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model)
         production_data = production_data[input_fields_names].values
-        logger.info(f"Finished loading production data. model version id = {model_version_id}")
     except Exception as e:
         logger.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
+    else:
+        logger.info(f"Finished loading production data. model version id = {model_version_id}")
 
     try:
         # Calculate numerical statistics first
