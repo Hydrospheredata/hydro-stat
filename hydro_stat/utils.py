@@ -3,11 +3,23 @@ from typing import Union
 import pandas as pd
 import requests
 import s3fs
+
 from hydrosdk.model import Model, ExternalModel
 
 
 def get_training_data(model: Union[Model, ExternalModel], s3_endpoint) -> pd.DataFrame:
-    s3_training_data_path = requests.get(f"{model.cluster.http_address}/monitoring/training_data?modelVersionId={model.id}").json()[0]
+    # TODO change this when model and extModel id is named same
+    if isinstance(model, Model):
+        r = requests.get(f"{model.cluster.http_address}/monitoring/training_data?modelVersionId={model.id}")
+    elif isinstance(model, ExternalModel):
+        r = requests.get(f"{model.cluster.http_address}/monitoring/training_data?modelVersionId={model.id_}")
+
+    if r.status_code != 200:
+        raise ValueError("Unable to fetch training data")
+    r_json = r.json()
+    if not r_json:
+        raise ValueError("Training data not found")
+    s3_training_data_path = r_json[0]
 
     if s3_endpoint:
         fs = s3fs.S3FileSystem(client_kwargs={'endpoint_url': s3_endpoint})
@@ -18,7 +30,16 @@ def get_training_data(model: Union[Model, ExternalModel], s3_endpoint) -> pd.Dat
 
 
 def get_production_data(model: Union[Model, ExternalModel], size=1000) -> pd.DataFrame:
-    r = requests.get(f'{model.cluster.http_address}/monitoring/checks/subsample/{model.id}?size={size}')
+    # TODO change this when model and extModel id is named same
+    if isinstance(model, Model):
+        r = requests.get(f'{model.cluster.http_address}/monitoring/checks/subsample/{model.id}?size={size}')
+    elif isinstance(model, ExternalModel):
+        r = requests.get(f'{model.cluster.http_address}/monitoring/checks/subsample/{model.id_}?size={size}')
+
     if r.status_code != 200:
         raise ValueError("Unable to fetch production data")
-    return pd.DataFrame.from_dict(r.json())
+    r_json = r.json()
+    if not r_json:
+        raise ValueError("Production data not found")
+
+    return pd.DataFrame.from_dict(r_json)

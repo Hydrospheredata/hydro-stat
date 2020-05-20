@@ -1,8 +1,9 @@
 # By Anne M. Archibald, 2007 and 2009
-import numpy as np
-from numpy import copy, sort, amax, arange, exp, sqrt, abs, floor, searchsorted
-from scipy.special import factorial, comb
 import itertools
+
+import numpy as np
+from numpy import sort, amax, arange, exp, sqrt, abs, floor, searchsorted
+from scipy.special import factorial, comb
 
 
 def kuiper_FPP(D, N):
@@ -201,6 +202,7 @@ def plot_density(test, clas, cluster, train=False):
     # plt.show()
     pass
 
+
 def a_distance_two(data1, data2):
     """Compute the Kuiper statistic to compare two samples.
 
@@ -303,7 +305,7 @@ def cdf_from_intervals(breaks, totals):
 
     Returns
     -------
-    f : callable
+    feature_name : callable
         A cumulative distribution function corresponding to the 
         piecewise-constant probability distribution given by breaks, weights
 
