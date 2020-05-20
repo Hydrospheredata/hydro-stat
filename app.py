@@ -143,7 +143,7 @@ def get_metrics():
         logging.error(f"Failed during loading training data. {e}")
         return Response(status=500)
     else:
-        logger.info(f"Finished loading training data. model version id = {model_version_id}")
+        logging.info(f"Finished loading training data. model version id = {model_version_id}")
 
     try:
         logging.info(f"Loading production data. model version id = {model_version_id}")
@@ -156,7 +156,7 @@ def get_metrics():
         logging.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
     else:
-        logger.info(f"Finished loading production data. model version id = {model_version_id}")
+        logging.info(f"Finished loading production data. model version id = {model_version_id}")
 
     try:
         # Calculate numerical statistics first
