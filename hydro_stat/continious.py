@@ -165,6 +165,7 @@ def test(s1, s2, test_type, config=None):
             results = out_hull(s1, s2)
             report['metric'] = results
             report['decision'] = 'there is a change' if results < 0.5 else 'there is no change'
+
         elif test_type == 'kupier':
             metrics = []
             fpps = []
@@ -176,8 +177,10 @@ def test(s1, s2, test_type, config=None):
                     raise ValueError
             report['metric'] = metrics
             report['fpp'] = fpps
+
             report['decision'] = ['there is a change' if ratio > 0.4 else 'there is no change' for ratio in
                                   report['metric']]
+
         elif test_type == 'a_dist':
             metrics = []
             for ss1, ss2 in zip(s1.T, s2.T):
@@ -186,19 +189,16 @@ def test(s1, s2, test_type, config=None):
             report['metric'] = metrics
             report['decision'] = ['there is a change' if ratio > 0.4 else 'there is no change' for ratio in
                                   report['metric']]
-
         if 'p_value' in report.keys():
             report['decision'] = ['there is a change' if p < THRESHOLD else 'there is no change' for p in
                                   report['p_value']]
-
         if not isinstance(report.get('p_value', []), list):
             report['p_value'] = report['p_value'].tolist()
 
         if not isinstance(report['metric'], list):
             report['metric'] = report['metric'].tolist()
         report['status'] = 'succeeded'
-
-    except:
+    except Exception as e:
+        print(str(e))
         report['status'] = 'failed'
-
     return report
