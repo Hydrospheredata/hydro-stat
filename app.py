@@ -14,7 +14,7 @@ from flask_cors import CORS
 from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
     DT_UINT64, DT_STRING
 from hydrosdk.cluster import Cluster
-from hydrosdk.model import Model
+from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
 from hydro_stat.discrete import process_feature
@@ -75,7 +75,7 @@ def buildinfo():
     return jsonify(BUILD_INFO)
 
 
-def is_model_supported(model_version: Model):
+def is_model_supported(model_version: ModelVersion):
     has_training_data = len(requests.get(f"{HTTP_UI_ADDRESS}/monitoring/training_data?modelVersionId={model_version.id}").json()) > 0
 
     if not has_training_data:
@@ -89,7 +89,7 @@ def is_model_supported(model_version: Model):
 
     input_tensor_dtypes = [input_tensor.dtype for input_tensor in signature.inputs]
     if not all([dtype in SUPPORTED_DTYPES for dtype in input_tensor_dtypes]):
-        return False, "Only signatures with all numerical fields are supported"
+        return False, "Only signatures with numerical or string fields are supported"
 
     return True, "OK"
 
@@ -101,7 +101,7 @@ def model_support():
     except:
         return jsonify({"message": f"Unable to process 'model_version_id' argument"}), 400
 
-    model_version = Model.find_by_id(hs_cluster, model_version_id)
+    model_version = ModelVersion.find_by_id(hs_cluster, model_version_id)
     supported, description = is_model_supported(model_version)
     support_status = {"supported": supported, "description": description}
     return jsonify(support_status)
@@ -127,7 +127,7 @@ def get_metrics():
 
     try:
         cluster = Cluster(HTTP_UI_ADDRESS)
-        model = Model.find_by_id(cluster, model_version_id)
+        model = ModelVersion.find_by_id(cluster, model_version_id)
     except Exception as e:
         logging.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
 
