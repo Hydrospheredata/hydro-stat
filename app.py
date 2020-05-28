@@ -2,8 +2,8 @@ import json
 import logging
 import os
 import sys
-from logging.config import fileConfig
 from itertools import compress
+from logging.config import fileConfig
 from multiprocessing.pool import ThreadPool
 
 import git
@@ -130,6 +130,7 @@ def get_metrics():
         model = ModelVersion.find_by_id(cluster, model_version_id)
     except Exception as e:
         logging.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
+        return Response(status=500)
 
     input_fields_names = [field.name for field in model.contract.predict.inputs]
     input_fields_dtypes = [field.dtype for field in model.contract.predict.inputs]
@@ -150,8 +151,6 @@ def get_metrics():
         production_data = get_production_data(model)
         production_data = production_data[input_fields_names]
         production_data = production_data[input_fields_names].values
-        logging.info(f"Finished loading production data. model version id = {model_version_id}")
-
     except Exception as e:
         logging.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
