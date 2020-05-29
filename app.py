@@ -8,7 +8,6 @@ from multiprocessing.pool import ThreadPool
 
 import git
 import numpy as np
-import requests
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
@@ -29,6 +28,8 @@ fileConfig("logging_config.ini")
 DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
 HTTP_PORT = int(os.getenv("HTTP_PORT", 5000))
 
+PRODUCTION_SUBSAMPLE_SIZE = 200
+
 NUMERICAL_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
 SUPPORTED_DTYPES = NUMERICAL_DTYPES.union({DT_STRING, })
 
@@ -48,7 +49,7 @@ THRESHOLD = 0.01
 HTTP_UI_ADDRESS = os.getenv("HTTP_UI_ADDRESS", "http://managerui")
 S3_ENDPOINT = os.getenv("S3_ENDPOINT")
 
-from hydro_stat.utils import get_production_data, get_training_data
+from hydro_stat.utils import get_production_data, get_training_data, is_model_supported
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -75,25 +76,6 @@ def buildinfo():
     return jsonify(BUILD_INFO)
 
 
-def is_model_supported(model_version: ModelVersion):
-    has_training_data = len(requests.get(f"{HTTP_UI_ADDRESS}/monitoring/training_data?modelVersionId={model_version.id}").json()) > 0
-
-    if not has_training_data:
-        return False, "Need uploaded training data"
-
-    signature = model_version.contract.predict
-
-    input_tensor_shapes = [tuple(map(lambda dim: dim.size, input_tensor.shape.dim)) for input_tensor in signature.inputs]
-    if not all([shape == tuple() for shape in input_tensor_shapes]):
-        return False, "Only signatures with all scalar fields are supported"
-
-    input_tensor_dtypes = [input_tensor.dtype for input_tensor in signature.inputs]
-    if not all([dtype in SUPPORTED_DTYPES for dtype in input_tensor_dtypes]):
-        return False, "Only signatures with numerical or string fields are supported"
-
-    return True, "OK"
-
-
 @app.route("/stat/support", methods=['GET'])
 def model_support():
     try:
@@ -102,7 +84,7 @@ def model_support():
         return jsonify({"message": f"Unable to process 'model_version_id' argument"}), 400
 
     model_version = ModelVersion.find_by_id(hs_cluster, model_version_id)
-    supported, description = is_model_supported(model_version)
+    supported, description = is_model_supported(model_version, PRODUCTION_SUBSAMPLE_SIZE)
     support_status = {"supported": supported, "description": description}
     return jsonify(support_status)
 
@@ -115,7 +97,7 @@ def get_metrics():
 
     try:
         model_version_id = int(request.args.get('model_version_id'))
-    except:
+    except ValueError:
         return jsonify({"message": f"Was unable to cast model_version to int"}), 400
 
     tests = ['two_sample_t_test', 'one_sample_t_test', 'anova',
@@ -148,7 +130,7 @@ def get_metrics():
 
     try:
         logging.info(f"Loading production data. model version id = {model_version_id}")
-        production_data = get_production_data(model)
+        production_data = get_production_data(model, size=PRODUCTION_SUBSAMPLE_SIZE)
         production_data = production_data[input_fields_names]
         production_data = production_data[input_fields_names].values
     except Exception as e:
