@@ -1,48 +1,20 @@
 import json
 import logging
-import os
-import sys
 from logging.config import fileConfig
 
-import git
 import numpy as np
+import requests
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
-    DT_UINT64, DT_STRING
 from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
-from hydro_stat.statistical_report import StatisticalReport
-
 fileConfig("logging_config.ini")
 
-DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
-HTTP_PORT = int(os.getenv("HTTP_PORT", 5000))
-
-PRODUCTION_SUBSAMPLE_SIZE = 200
-
-NUMERICAL_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
-SUPPORTED_DTYPES = NUMERICAL_DTYPES.union({DT_STRING, })
-
-with open("version") as version_file:
-    VERSION = version_file.read().strip()
-    repo = git.Repo(".")
-    BUILD_INFO = {
-        "version": VERSION,
-        "name": "hydro-stat",
-        "pythonVersion": sys.version,
-        "gitCurrentBranch": repo.active_branch.name,
-        "gitHeadCommit": repo.active_branch.commit.hexsha
-    }
-
-THRESHOLD = 0.01
-
-HTTP_UI_ADDRESS = os.getenv("HTTP_UI_ADDRESS", "http://managerui")
-S3_ENDPOINT = os.getenv("S3_ENDPOINT")
-
-from hydro_stat.utils import get_production_data, get_training_data, is_model_supported
+from config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, PRODUCTION_SUBSAMPLE_SIZE, S3_ENDPOINT, SUPPORTED_DTYPES, BATCH_SIZE
+from hydro_stat.utils import get_production_data, get_training_data
+from hydro_stat.statistical_report import StatisticalReport
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -80,6 +52,33 @@ def model_support():
     supported, description = is_model_supported(model_version, PRODUCTION_SUBSAMPLE_SIZE)
     support_status = {"supported": supported, "description": description}
     return jsonify(support_status)
+
+
+def is_model_supported(model_version: ModelVersion, subsample_size):
+    has_training_data = len(requests.get(f"{HTTP_UI_ADDRESS}/monitoring/training_data?modelVersionId={model_version.id}").json()) > 0
+    if not has_training_data:
+        return False, "Need uploaded training data"
+
+    production_data_aggregates = requests.get(f"{HTTP_UI_ADDRESS}/monitoring/checks/aggregates/{model_version.id}",
+                                              params={"limit": 1, "offset": 0}).json()
+    number_of_production_requests = production_data_aggregates['count']
+    if number_of_production_requests == 0:
+        return False, "Upload production data before running hydro-stat"
+    elif number_of_production_requests*BATCH_SIZE < subsample_size:
+        return False, f"hydro-stat is available after {subsample_size} requests." \
+                      f" Currently ({number_of_production_requests*BATCH_SIZE}/{subsample_size})"
+
+    signature = model_version.contract.predict
+
+    input_tensor_shapes = [tuple(map(lambda dim: dim.size, input_tensor.shape.dim)) for input_tensor in signature.inputs]
+    if not all([shape == tuple() for shape in input_tensor_shapes]):
+        return False, "Only signatures with all scalar fields are supported"
+
+    input_tensor_dtypes = [input_tensor.dtype for input_tensor in signature.inputs]
+    if not all([dtype in SUPPORTED_DTYPES for dtype in input_tensor_dtypes]):
+        return False, "Only signatures with numerical or string fields are supported"
+
+    return True, "OK"
 
 
 @app.route("/stat/metrics", methods=["GET"])
