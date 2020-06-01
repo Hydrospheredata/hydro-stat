@@ -2,9 +2,7 @@ import json
 import logging
 import os
 import sys
-from itertools import compress
 from logging.config import fileConfig
-from multiprocessing.pool import ThreadPool
 
 import git
 import numpy as np
@@ -16,12 +14,7 @@ from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
-from hydro_stat.discrete import process_feature
-from hydro_stat.interpret import interpret
-from hydro_stat.monitor_stats import get_numerical_statistics, get_histograms
-from stat_analysis import one_test, per_statistic_change_probability, make_per_feature_report, per_feature_change_probability, \
-    final_decision, \
-    overall_probability_drift
+from hydro_stat.statistical_report import StatisticalReport
 
 fileConfig("logging_config.ini")
 
@@ -100,12 +93,7 @@ def get_metrics():
     except ValueError:
         return jsonify({"message": f"Was unable to cast model_version to int"}), 400
 
-    tests = ['two_sample_t_test', 'one_sample_t_test', 'anova',
-             'mann', 'kruskal', 'levene_mean',
-             'levene_median', 'levene_trimmed',
-             'sign_test', 'median_test',
-             'ks']
-    logging.info("Metrics for model version id = {}".format(model_version_id))
+    logging.info("Calculating metrics for model version id = {}".format(model_version_id))
 
     try:
         cluster = Cluster(HTTP_UI_ADDRESS)
@@ -114,13 +102,9 @@ def get_metrics():
         logging.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
         return Response(status=500)
 
-    input_fields_names = [field.name for field in model.contract.predict.inputs]
-    input_fields_dtypes = [field.dtype for field in model.contract.predict.inputs]
-
     try:
         logging.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
-        training_data = training_data[input_fields_names].values
         logging.info(f"Finished loading training data. model version id = {model_version_id}")
     except Exception as e:
         logging.error(f"Failed during loading training data. {e}")
@@ -131,8 +115,6 @@ def get_metrics():
     try:
         logging.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model, size=PRODUCTION_SUBSAMPLE_SIZE)
-        production_data = production_data[input_fields_names]
-        production_data = production_data[input_fields_names].values
     except Exception as e:
         logging.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
@@ -140,52 +122,13 @@ def get_metrics():
         logging.info(f"Finished loading production data. model version id = {model_version_id}")
 
     try:
-        # Calculate numerical statistics first
-        numerical_fields = [field_dtype in NUMERICAL_DTYPES for field_dtype in input_fields_dtypes]
-        numerical_fields_names = list(compress(input_fields_names, numerical_fields))
-        numerical_training_data = training_data[:, numerical_fields]
-        numerical_production_data = production_data[:, numerical_fields]
-
-        numerical_training_statistics = get_numerical_statistics(numerical_training_data)
-        numerical_production_statistics = get_numerical_statistics(numerical_production_data)
-
-        histograms = get_histograms(numerical_training_data, numerical_production_data, numerical_fields_names)
-
-        # Run async numerical stat test
-        full_report = {}
-        pool = ThreadPool(processes=1)
-        async_results = {}
-        for test in tests:
-            async_results[test] = pool.apply_async(one_test, (training_data, production_data, test))
-        for test in tests:
-            full_report[test] = async_results[test].get()
-        per_statistic_change_probability(full_report)
+        report = StatisticalReport(model, training_data, production_data)
+        report.process()
     except Exception as e:
         logging.error(f"Failed during computing statistics {e}")
         return Response(status=500)
 
-    final_report = {'per_feature_report': make_per_feature_report(numerical_fields_names, numerical_training_statistics, histograms,
-                                                                  numerical_production_statistics,
-                                                                  per_statistic_change_probability(full_report),
-                                                                  per_feature_change_probability(full_report)),
-                    'overall_probability_drift': overall_probability_drift(full_report)}
-
-    # Process discrete string fields
-    string_fields = [field_dtype == DT_STRING for field_dtype in input_fields_dtypes]
-    string_training_data = training_data[:, string_fields]
-    string_production_data = production_data[:, string_fields]
-
-    for training_feature, deployment_feature, feature_name in zip(string_training_data, string_production_data,
-                                                                  list(compress(input_fields_names, string_fields))):
-        final_report['per_feature_report'][feature_name] = process_feature(training_feature, deployment_feature)
-
-    warnings = {'final_decision': final_decision(full_report),
-                'report': interpret(final_report['per_feature_report'])}
-
-    final_report['warnings'] = warnings
-
-    json_dump = json.dumps(final_report, cls=NumpyEncoder)
-    return json.loads(json_dump)
+    return jsonify(report.to_json())
 
 
 @app.route("/stat/config", methods=['GET', 'PUT'])
