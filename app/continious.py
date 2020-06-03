@@ -3,7 +3,7 @@ from scipy import stats
 from scipy.spatial import Delaunay
 from statsmodels.stats.descriptivestats import sign_test
 
-from hydro_stat.kuiper import kuiper_two, a_distance_two
+from app.kuiper import kuiper_two, a_distance_two
 
 # TODO fetch from app.py or better get as an argument
 THRESHOLD = 0.1
