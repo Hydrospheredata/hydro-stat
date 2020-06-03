@@ -5,7 +5,7 @@ import pandas as pd
 from hydrosdk.modelversion import ModelVersion
 
 from config import NUMERICAL_DTYPES
-from hydro_stat.statistical_feature_report import NumericalFeatureReport, StatisticalFeatureReport
+from statistical_feature_report import NumericalFeatureReport, StatisticalFeatureReport
 
 
 class StatisticalReport:

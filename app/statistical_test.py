@@ -53,7 +53,7 @@ class StatisticalTest:
                 self.message = f"No significant difference at significance level = {self.threshold}"
 
     def as_json(self):
-        return {"has_changed": str(self.has_changed),
+        return {"has_changed": bool(self.has_changed),
                 "deployment": self.production_statistic,
                 "training": self.training_statistic,
                 "message": self.message}
