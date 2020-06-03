@@ -1,5 +1,6 @@
+import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 
 import numpy as np
 import pandas as pd
@@ -17,7 +18,7 @@ class FeatureReportFactory:
 
         unique_training_values = training_data.value_counts().shape[0]
 
-        if unique_training_values / training_data.shape[0] <= 0.05:
+        if unique_training_values / training_data.shape[0] <= 0.05 and unique_training_values <= 20:
             return CategoricalFeatureReport(feature_name, training_data.values.astype("str"), production_data.values.astype("str"))
         elif feature_dtype in NUMERICAL_DTYPES:
             return NumericalFeatureReport(feature_name, training_data.values, production_data.values)
@@ -28,6 +29,7 @@ class FeatureReportFactory:
 class StatisticalFeatureReport(ABC):
 
     def __init__(self, feature_name: str, training_data: np.array, production_data: np.array):
+        logging.info(f"Creating report for {feature_name}")
         self.feature_name = feature_name
         self.training_data = training_data
         self.production_data = production_data
@@ -41,8 +43,8 @@ class StatisticalFeatureReport(ABC):
         self.training_histogram_values = training_hist
         self.production_histogram_values = deployment_hist
 
-    @abstractmethod
     def process(self):
+        logging.info(f"Calculating features for {self.feature_name}")
         pass
 
     def to_json(self) -> Dict:
@@ -58,7 +60,13 @@ class StatisticalFeatureReport(ABC):
                     "message": f"The feature {self.feature_name} has changed."}
 
     @abstractmethod
-    def _get_histogram(self):
+    def _get_histogram(self) -> Tuple[np.array, np.array, np.array]:
+        """
+
+        Returns
+        -------
+        (bins, training values, production_values)
+        """
         pass
 
 
@@ -75,6 +83,7 @@ class NumericalFeatureReport(StatisticalFeatureReport):
         ]
 
     def process(self):
+        super().process()
         for test in self.tests:
             test.process(self.training_data, self.production_data)
 
@@ -118,7 +127,7 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
 
     @classmethod
     def __unique_values_test(cls, training_frequencies, production_frequencies):
-        if sum(training_frequencies[production_frequencies > 0]) > 0:
+        if sum(training_frequencies[production_frequencies > 0 & training_frequencies == 0]) > 0:
             return None, 0  # Definitely Changed
         else:
             return None, 1  # Prob. Not changed
@@ -127,13 +136,19 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
         training_categories, t_counts = np.unique(self.training_data, return_counts=True)
         production_categories, p_counts = np.unique(self.production_data, return_counts=True)
 
-        common_categories = list(set(training_categories).union(set(production_categories)))
+        common_categories = np.array(list(set(training_categories).union(set(production_categories))))
+        logging.info(f"Categories {common_categories}")
+
         production_category_to_count = dict(zip(production_categories, p_counts))
         training_category_to_count = dict(zip(training_categories, t_counts))
+        logging.info(f"production_category_to_count {production_category_to_count}")
 
-        training_counts_for_common_categories = np.array([training_category_to_count.get(category, 0) for category in common_categories])
+        training_counts_for_common_categories = np.array(
+            [training_category_to_count.get(category, 0) for category in common_categories])
+
         production_counts_for_common_categories = np.array(
             [production_category_to_count.get(category, 0) for category in common_categories])
+        logging.info(f"production_counts_for_common_categories {production_counts_for_common_categories}")
 
         # training_density = training_counts_for_common_categories / training_counts_for_common_categories.sum()
         # production_density = production_counts_for_common_categories / production_counts_for_common_categories.sum()
@@ -141,6 +156,7 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
         return common_categories, training_counts_for_common_categories, production_counts_for_common_categories
 
     def process(self):
+        super().process()
         for test in self.tests:
             test.process(self.training_histogram_values, self.production_histogram_values)
 
