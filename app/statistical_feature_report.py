@@ -40,9 +40,9 @@ class NumericalFeatureReport(StatisticalFeatureReport):
 
         # List of tests used for comparing production and training numerical columns
         self.tests: List[StatisticalTest] = [
-            StatisticalTest("two_sample_t_test", np.mean, stats.ttest_ind, {"equal_var": False}),
-            StatisticalTest("median_test", np.median, stats.median_test),
-            StatisticalTest("levene", np.var, stats.levene, {"center": "mean"}),
+            StatisticalTest("Mean", np.mean, stats.ttest_ind, {"equal_var": False}),
+            StatisticalTest("Median", np.median, stats.median_test, {"ties": "ignore"}),
+            StatisticalTest("Variance", np.var, stats.levene, {"center": "mean"}),
         ]
 
 
