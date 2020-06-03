@@ -36,7 +36,7 @@ class StatisticalTest:
         self.training_statistic = self.statistic_func(training_data)
         self.production_statistic = self.statistic_func(production_data)
 
-        test_statistic, test_p = self.statistic_test_func(training_data, production_data, **self.statistic_test_func_kwargs)
+        test_statistic, test_p = self.statistic_test_func(training_data, production_data, **self.statistic_test_func_kwargs)[:2]
         self.test_statistic = test_statistic
         self.test_p = test_p
         self.has_changed = test_p <= self.threshold
