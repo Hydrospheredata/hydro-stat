@@ -9,6 +9,7 @@ from flask_cors import CORS
 from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
+import pandas as pd
 
 fileConfig("logging_config.ini")
 
@@ -113,6 +114,7 @@ def get_metrics():
     try:
         logging.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model, size=PRODUCTION_SUBSAMPLE_SIZE)
+
     except Exception as e:
         logging.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)

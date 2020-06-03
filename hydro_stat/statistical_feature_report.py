@@ -45,9 +45,15 @@ class NumericalFeatureReport(StatisticalFeatureReport):
             StatisticalTest("levene", np.var, stats.levene, {"center": "mean"}),
         ]
 
+
     def process(self):
         for test in self.tests:
             test.process(self.training_data, self.production_data)
+
+        # TODO add KS test to numerical features (or overall statistics)?
+        # _, p_value = stats.ks_2samp(self.training_data, self.production_data)
+        # self.ks_test_change = p_value <= 0.05
+
         self.is_processed = True
         self.drift_probability = np.mean([test.has_changed for test in self.tests])
 
@@ -70,9 +76,8 @@ class NumericalFeatureReport(StatisticalFeatureReport):
         data_minimum = min(training_data.min(), deployment_data.min())
         data_maximum = max(training_data.max(), deployment_data.max())
 
-        # TODO select number of bins based on config / Freedman-Diaconis rule?
         training_histogram, bin_edges = np.histogram(training_data,
-                                                     bins=number_of_bins,
+                                                     bins='auto',
                                                      normed=True, density=True,
                                                      range=[data_minimum, data_maximum])
 

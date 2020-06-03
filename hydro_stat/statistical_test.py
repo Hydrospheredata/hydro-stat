@@ -19,6 +19,7 @@ class StatisticalTest:
 
         self.name = name
         self.has_changed = None
+        self.message = None
 
         self.statistic_func = statistic_func
         self.training_statistic = None
@@ -36,16 +37,23 @@ class StatisticalTest:
         self.training_statistic = self.statistic_func(training_data)
         self.production_statistic = self.statistic_func(production_data)
 
-        test_statistic, test_p = self.statistic_test_func(training_data, production_data, **self.statistic_test_func_kwargs)[:2]
-        self.test_statistic = test_statistic
-        self.test_p = test_p
-        self.has_changed = test_p <= self.threshold
+        try:
+            test_statistic, test_p = self.statistic_test_func(training_data, production_data, **self.statistic_test_func_kwargs)[:2]
+        except Exception as e:
+            self.message = f"Unable to calculate statistic: {str(e)}"
+            self.has_changed = False
+        else:
+            self.test_statistic = test_statistic
+            self.test_p = test_p
+            self.has_changed = test_p <= self.threshold
 
-        # TODO Statistical test by itself has no change probability
-        # FIXME Change UI from probability to boolean "changed at alpha = 0.01 - Yes/No"
-        self.change_probability = 0
+            if self.has_changed:
+                self.message = f"Different at significance level = {self.threshold}"
+            else:
+                self.message = f"No significant difference at significance level = {self.threshold}"
 
     def as_json(self):
-        return {"change_probability": self.change_probability,
+        return {"has_changed": str(self.has_changed),
                 "deployment": self.production_statistic,
-                "training": self.training_statistic}
+                "training": self.training_statistic,
+                "message": self.message}
