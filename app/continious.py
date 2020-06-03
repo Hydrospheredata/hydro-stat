@@ -6,7 +6,7 @@
 # from app.kuiper import kuiper_two, a_distance_two
 #
 # # TODO fetch from app.py or better get as an argument
-# THRESHOLD = 0.1
+# SIGNIFICANCE_LEVEL = 0.1
 #
 #
 # def fall_in(ss1, ss2):
@@ -107,8 +107,8 @@
 #                 if config:
 #                     results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=config.proportiontocut)
 #                 else:
-#                     # FIXME why proportiontocut is set to THRESHOLD?
-#                     results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=THRESHOLD)
+#                     # FIXME why proportiontocut is set to SIGNIFICANCE_LEVEL?
+#                     results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=SIGNIFICANCE_LEVEL)
 #
 #                 metrics.append(results[0])
 #                 p_values.append(results[1])
@@ -192,7 +192,7 @@
 #             report['decision'] = ['there is a change' if ratio > 0.4 else 'there is no change' for ratio in
 #                                   report['metric']]
 #         if 'p_value' in report.keys():
-#             report['decision'] = ['there is a change' if p < THRESHOLD else 'there is no change' for p in
+#             report['decision'] = ['there is a change' if p < SIGNIFICANCE_LEVEL else 'there is no change' for p in
 #                                   report['p_value']]
 #         if not isinstance(report.get('p_value', []), list):
 #             report['p_value'] = report['p_value'].tolist()

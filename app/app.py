@@ -122,18 +122,18 @@ def get_metrics():
 def get_params():
     global THRESHOLD
     if request.method == 'GET':
-        return jsonify({'THRESHOLD': THRESHOLD})
+        return jsonify({'SIGNIFICANCE_LEVEL': THRESHOLD})
 
     elif request.method == "PUT":
-        possible_args = {"THRESHOLD"}
+        possible_args = {"SIGNIFICANCE_LEVEL"}
         if set(request.args.keys()) != possible_args:
             return jsonify(
                 {"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
 
-        logging.info('THRESHOLD changed from {} to {}'.format(THRESHOLD, request.args['THRESHOLD']))
+        logging.info('SIGNIFICANCE_LEVEL changed from {} to {}'.format(THRESHOLD, request.args['SIGNIFICANCE_LEVEL']))
 
         # TODO use mongo to store configs in there
-        THRESHOLD = float(request.args['THRESHOLD'])
+        THRESHOLD = float(request.args['SIGNIFICANCE_LEVEL'])
 
         return Response(status=200)
     else:
