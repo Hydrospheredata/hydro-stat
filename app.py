@@ -1,65 +1,18 @@
-import json
 import logging
-import os
-import sys
-from itertools import compress
 from logging.config import fileConfig
-from multiprocessing.pool import ThreadPool
 
-import git
-import numpy as np
+import requests
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
-    DT_UINT64, DT_STRING
 from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
-from hydro_stat.discrete import process_feature
-from hydro_stat.interpret import interpret
-from hydro_stat.monitor_stats import get_numerical_statistics, get_histograms
-from stat_analysis import one_test, per_statistic_change_probability, make_per_feature_report, per_feature_change_probability, \
-    final_decision, \
-    overall_probability_drift
-
 fileConfig("logging_config.ini")
 
-DEBUG_ENV = bool(os.getenv("DEBUG_ENV", False))
-HTTP_PORT = int(os.getenv("HTTP_PORT", 5000))
-
-PRODUCTION_SUBSAMPLE_SIZE = 200
-
-NUMERICAL_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
-SUPPORTED_DTYPES = NUMERICAL_DTYPES.union({DT_STRING, })
-
-with open("version") as version_file:
-    VERSION = version_file.read().strip()
-    repo = git.Repo(".")
-    BUILD_INFO = {
-        "version": VERSION,
-        "name": "hydro-stat",
-        "pythonVersion": sys.version,
-        "gitCurrentBranch": repo.active_branch.name,
-        "gitHeadCommit": repo.active_branch.commit.hexsha
-    }
-
-THRESHOLD = 0.01
-
-HTTP_UI_ADDRESS = os.getenv("HTTP_UI_ADDRESS", "http://managerui")
-S3_ENDPOINT = os.getenv("S3_ENDPOINT")
-
-from hydro_stat.utils import get_production_data, get_training_data, is_model_supported
-
-
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, np.int64):
-            return int(obj)
-        return json.JSONEncoder.default(self, obj)
-
+from config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, PRODUCTION_SUBSAMPLE_SIZE, S3_ENDPOINT, SUPPORTED_DTYPES, BATCH_SIZE
+from hydro_stat.utils import get_production_data, get_training_data
+from hydro_stat.statistical_report import StatisticalReport
 
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
 app = Flask(__name__)
@@ -89,6 +42,33 @@ def model_support():
     return jsonify(support_status)
 
 
+def is_model_supported(model_version: ModelVersion, subsample_size):
+    has_training_data = len(requests.get(f"{HTTP_UI_ADDRESS}/monitoring/training_data?modelVersionId={model_version.id}").json()) > 0
+    if not has_training_data:
+        return False, "Need uploaded training data"
+
+    production_data_aggregates = requests.get(f"{HTTP_UI_ADDRESS}/monitoring/checks/aggregates/{model_version.id}",
+                                              params={"limit": 1, "offset": 0}).json()
+    number_of_production_requests = production_data_aggregates['count']
+    if number_of_production_requests == 0:
+        return False, "Upload production data before running hydro-stat"
+    elif number_of_production_requests * BATCH_SIZE < subsample_size:
+        return False, f"hydro-stat is available after {subsample_size} requests." \
+                      f" Currently ({number_of_production_requests * BATCH_SIZE}/{subsample_size})"
+
+    signature = model_version.contract.predict
+
+    input_tensor_shapes = [tuple(map(lambda dim: dim.size, input_tensor.shape.dim)) for input_tensor in signature.inputs]
+    if not all([shape == tuple() for shape in input_tensor_shapes]):
+        return False, "Only signatures with all scalar fields are supported"
+
+    input_tensor_dtypes = [input_tensor.dtype for input_tensor in signature.inputs]
+    if not all([dtype in SUPPORTED_DTYPES for dtype in input_tensor_dtypes]):
+        return False, "Only signatures with numerical fields are supported"
+
+    return True, "OK"
+
+
 @app.route("/stat/metrics", methods=["GET"])
 def get_metrics():
     possible_args = {"model_version_id"}
@@ -100,12 +80,7 @@ def get_metrics():
     except ValueError:
         return jsonify({"message": f"Was unable to cast model_version to int"}), 400
 
-    tests = ['two_sample_t_test', 'one_sample_t_test', 'anova',
-             'mann', 'kruskal', 'levene_mean',
-             'levene_median', 'levene_trimmed',
-             'sign_test', 'median_test',
-             'ks']
-    logging.info("Metrics for model version id = {}".format(model_version_id))
+    logging.info("Calculating metrics for model version id = {}".format(model_version_id))
 
     try:
         cluster = Cluster(HTTP_UI_ADDRESS)
@@ -114,14 +89,9 @@ def get_metrics():
         logging.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
         return Response(status=500)
 
-    input_fields_names = [field.name for field in model.contract.predict.inputs]
-    input_fields_dtypes = [field.dtype for field in model.contract.predict.inputs]
-
     try:
         logging.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
-        training_data = training_data[input_fields_names].values
-        logging.info(f"Finished loading training data. model version id = {model_version_id}")
     except Exception as e:
         logging.error(f"Failed during loading training data. {e}")
         return Response(status=500)
@@ -131,8 +101,6 @@ def get_metrics():
     try:
         logging.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model, size=PRODUCTION_SUBSAMPLE_SIZE)
-        production_data = production_data[input_fields_names]
-        production_data = production_data[input_fields_names].values
     except Exception as e:
         logging.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
@@ -140,52 +108,13 @@ def get_metrics():
         logging.info(f"Finished loading production data. model version id = {model_version_id}")
 
     try:
-        # Calculate numerical statistics first
-        numerical_fields = [field_dtype in NUMERICAL_DTYPES for field_dtype in input_fields_dtypes]
-        numerical_fields_names = list(compress(input_fields_names, numerical_fields))
-        numerical_training_data = training_data[:, numerical_fields]
-        numerical_production_data = production_data[:, numerical_fields]
-
-        numerical_training_statistics = get_numerical_statistics(numerical_training_data)
-        numerical_production_statistics = get_numerical_statistics(numerical_production_data)
-
-        histograms = get_histograms(numerical_training_data, numerical_production_data, numerical_fields_names)
-
-        # Run async numerical stat test
-        full_report = {}
-        pool = ThreadPool(processes=1)
-        async_results = {}
-        for test in tests:
-            async_results[test] = pool.apply_async(one_test, (training_data, production_data, test))
-        for test in tests:
-            full_report[test] = async_results[test].get()
-        per_statistic_change_probability(full_report)
+        report = StatisticalReport(model, training_data, production_data)
+        report.process()
     except Exception as e:
         logging.error(f"Failed during computing statistics {e}")
         return Response(status=500)
 
-    final_report = {'per_feature_report': make_per_feature_report(numerical_fields_names, numerical_training_statistics, histograms,
-                                                                  numerical_production_statistics,
-                                                                  per_statistic_change_probability(full_report),
-                                                                  per_feature_change_probability(full_report)),
-                    'overall_probability_drift': overall_probability_drift(full_report)}
-
-    # Process discrete string fields
-    string_fields = [field_dtype == DT_STRING for field_dtype in input_fields_dtypes]
-    string_training_data = training_data[:, string_fields]
-    string_production_data = production_data[:, string_fields]
-
-    for training_feature, deployment_feature, feature_name in zip(string_training_data, string_production_data,
-                                                                  list(compress(input_fields_names, string_fields))):
-        final_report['per_feature_report'][feature_name] = process_feature(training_feature, deployment_feature)
-
-    warnings = {'final_decision': final_decision(full_report),
-                'report': interpret(final_report['per_feature_report'])}
-
-    final_report['warnings'] = warnings
-
-    json_dump = json.dumps(final_report, cls=NumpyEncoder)
-    return json.loads(json_dump)
+    return jsonify(report.to_json())
 
 
 @app.route("/stat/config", methods=['GET', 'PUT'])

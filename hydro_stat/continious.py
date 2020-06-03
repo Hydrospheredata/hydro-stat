@@ -107,6 +107,7 @@ def test(s1, s2, test_type, config=None):
                 if config:
                     results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=config.proportiontocut)
                 else:
+                    # FIXME why proportiontocut is set to THRESHOLD?
                     results = stats.levene(ss1, ss2, center='trimmed', proportiontocut=THRESHOLD)
 
                 metrics.append(results[0])
@@ -161,6 +162,7 @@ def test(s1, s2, test_type, config=None):
                 p_values.append(results[1])
             report['metric'] = metrics
             report['p_value'] = p_values
+
         elif test_type == 'hull':
             results = out_hull(s1, s2)
             report['metric'] = results
