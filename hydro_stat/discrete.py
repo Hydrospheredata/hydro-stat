@@ -1,7 +1,6 @@
 import numpy as np
-
-from sklearn import preprocessing
 from scipy.stats import entropy
+from sklearn import preprocessing
 
 from hydro_stat import continious
 
