@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from hydrosdk.modelversion import ModelVersion
 
-from app.config import NUMERICAL_DTYPES
-from app.statistical_feature_report import NumericalFeatureReport, StatisticalFeatureReport
+from config import NUMERICAL_DTYPES
+from statistical_feature_report import NumericalFeatureReport, StatisticalFeatureReport
 
 
 class StatisticalReport:

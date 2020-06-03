@@ -33,7 +33,7 @@ EXPOSE ${HTTP_PORT}
 HEALTHCHECK --start-period=10s CMD curl http://localhost:5000/stat/health
 
 COPY --from=build --chown=app:app /root/.local /home/app/.local
-COPY --from=build --chown=app:app buildinfo.json buildinfo.json
+COPY --from=build --chown=app:app buildinfo.json app/buildinfo.json
 COPY --chown=app:app app /app
 
 WORKDIR /app

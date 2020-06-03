@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 import numpy as np
 from scipy import stats
 
-from app.statistical_test import StatisticalTest
+from statistical_test import StatisticalTest
 
 
 class StatisticalFeatureReport:
