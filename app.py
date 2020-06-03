@@ -76,7 +76,7 @@ def is_model_supported(model_version: ModelVersion, subsample_size):
 
     input_tensor_dtypes = [input_tensor.dtype for input_tensor in signature.inputs]
     if not all([dtype in SUPPORTED_DTYPES for dtype in input_tensor_dtypes]):
-        return False, "Only signatures with numerical or string fields are supported"
+        return False, "Only signatures with numerical fields are supported"
 
     return True, "OK"
 
@@ -104,7 +104,6 @@ def get_metrics():
     try:
         logging.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
-        logging.info(f"Finished loading training data. model version id = {model_version_id}")
     except Exception as e:
         logging.error(f"Failed during loading training data. {e}")
         return Response(status=500)
