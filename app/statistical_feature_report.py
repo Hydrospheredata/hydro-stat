@@ -125,7 +125,7 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
         # List of tests used for comparing production and training categorical frequencies
         self.tests: List[StatisticalTest] = [
             StatisticalTest("Chi-Squared", np.mean, self.__chisquare, ),
-            StatisticalTest("Unique Values", np.nonzero, self.__unique_values_test),
+            StatisticalTest("Unique Values", lambda density: self.bins[np.nonzero(density)], self.__unique_values_test),
         ]
 
     def __unique_values_test(self, training_density, production_density):
