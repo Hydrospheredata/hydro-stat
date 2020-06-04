@@ -1,11 +1,12 @@
+import json
 from typing import List
 
 import numpy as np
 import pandas as pd
 from hydrosdk.modelversion import ModelVersion
 
-from config import NUMERICAL_DTYPES
-from statistical_feature_report import NumericalFeatureReport, StatisticalFeatureReport
+from statistical_feature_report import StatisticalFeatureReport, FeatureReportFactory
+from utils import NumpyArrayEncoder
 
 
 class StatisticalReport:
@@ -13,35 +14,22 @@ class StatisticalReport:
     def __init__(self, model: ModelVersion, training_data: pd.DataFrame, production_data: pd.DataFrame):
         self.__is_processed = False
 
-        # Get field names and dtypes for conditional analysis
-        input_fields_names = [field.name for field in model.contract.predict.inputs]
-        input_fields_dtypes = [field.dtype for field in model.contract.predict.inputs]
-        field_name_to_dtype = dict(zip(input_fields_names, input_fields_dtypes))
-
         # Drop columns with all NANs from production and training data
         training_data.dropna(axis=1, how="all", inplace=True)
         production_data.dropna(axis=1, how="all", inplace=True)
 
         # Select common input field names available both in model signature, training data and production data
+        input_fields_names = [field.name for field in model.contract.predict.inputs]
         common_input_field_names = set(training_data.columns). \
             intersection(set(input_fields_names)). \
             intersection(set(production_data.columns))
+        common_input_fields = [field for field in model.contract.predict.inputs if field.name in common_input_field_names]
 
-        numerical_fields_names = [field_name for field_name in common_input_field_names if
-                                  field_name_to_dtype[field_name] in NUMERICAL_DTYPES]
+        feature_reports = [FeatureReportFactory.get_feature_report(field.name, field.dtype,
+                                                                   training_data[field.name],
+                                                                   production_data[field.name]) for field in common_input_fields]
 
-        numerical_feature_reports = [NumericalFeatureReport(f_name,
-                                                            training_data[f_name].values,
-                                                            production_data[f_name].values) for f_name in numerical_fields_names]
-
-        # string_fields = [field_dtype == DT_STRING for field_dtype in input_fields_dtypes]
-        # string_fields_names = list(compress(input_fields_names, string_fields))
-        #
-        # string_feature_reports = [CategoricalFeatureReport(f_name,
-        #                                                    training_data[f_name].values,
-        #                                                    production_data[f_name].values) for f_name in string_fields_names]
-
-        self.feature_reports: List[StatisticalFeatureReport] = numerical_feature_reports  # + string_feature_reports
+        self.feature_reports: List[StatisticalFeatureReport] = [x for x in feature_reports if x is not None]
 
     def process(self):
         [feature_report.process() for feature_report in self.feature_reports]
@@ -51,9 +39,12 @@ class StatisticalReport:
         if not self.__is_processed:
             raise ValueError("Called before calculating report")
 
-        return {"overall_probability_drift": self.__overall_drift(),
-                "per_feature_report": self.__per_feature_report(),
-                "warnings": self.__warnings_report()}
+        numpy_json = {"overall_probability_drift": self.__overall_drift(),
+                      "per_feature_report": self.__per_feature_report(),
+                      "warnings": self.__warnings_report()}
+
+        encoded_numpy_json = json.dumps(numpy_json, cls=NumpyArrayEncoder)  # use dump() to write array into file
+        return json.loads(encoded_numpy_json)
 
     def __per_feature_report(self):
         return dict([(feature_report.feature_name, feature_report.to_json()) for feature_report in self.feature_reports])

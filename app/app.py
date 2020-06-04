@@ -13,7 +13,7 @@ from config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     SUPPORTED_DTYPES, BATCH_SIZE
 from statistical_report import StatisticalReport
 from utils import get_production_data, get_training_data
-
+import pandas as pd
 fileConfig("resources/logging_config.ini")
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
 app = Flask(__name__)
@@ -93,6 +93,7 @@ def get_metrics():
     try:
         logging.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
+        # training_data = pd.read_csv("train.csv")
     except Exception as e:
         logging.error(f"Failed during loading training data. {e}")
         return Response(status=500)
@@ -102,6 +103,8 @@ def get_metrics():
     try:
         logging.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model, size=PRODUCTION_SUBSAMPLE_SIZE)
+        # production_data = pd.read_csv("train.csv")
+
     except Exception as e:
         logging.error(f"Failed during loading production_data data. {e}")
         return Response(status=500)
@@ -122,18 +125,18 @@ def get_metrics():
 def get_params():
     global THRESHOLD
     if request.method == 'GET':
-        return jsonify({'THRESHOLD': THRESHOLD})
+        return jsonify({'SIGNIFICANCE_LEVEL': THRESHOLD})
 
     elif request.method == "PUT":
-        possible_args = {"THRESHOLD"}
+        possible_args = {"SIGNIFICANCE_LEVEL"}
         if set(request.args.keys()) != possible_args:
             return jsonify(
                 {"message": f"Expected args: {possible_args}. Provided args: {set(request.args.keys())}"}), 400
 
-        logging.info('THRESHOLD changed from {} to {}'.format(THRESHOLD, request.args['THRESHOLD']))
+        logging.info('SIGNIFICANCE_LEVEL changed from {} to {}'.format(THRESHOLD, request.args['SIGNIFICANCE_LEVEL']))
 
         # TODO use mongo to store configs in there
-        THRESHOLD = float(request.args['THRESHOLD'])
+        THRESHOLD = float(request.args['SIGNIFICANCE_LEVEL'])
 
         return Response(status=200)
     else:

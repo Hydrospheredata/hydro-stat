@@ -1,8 +1,10 @@
 from typing import Callable
 
+from config import SIGNIFICANCE_LEVEL
+
 
 class StatisticalTest:
-    threshold = 0.05
+    threshold = SIGNIFICANCE_LEVEL
 
     def __init__(self, name: str,
                  statistic_func: Callable,
@@ -13,7 +15,7 @@ class StatisticalTest:
         ----------
         name - Name of the statistical test used
         statistic_func -  Function which is used to calculate tested statistic from np.array
-        statistic_test_func - Function which is used to calculate test statistic from 2 np.arrays
+        statistic_test_func - Function which is used to calculate (test_statistic, test_p) from 2 np.arrays
         statistic_test_func_kwargs - kwargs passed to statistic_test_func
         """
 

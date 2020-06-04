@@ -1,7 +1,17 @@
+from json import JSONEncoder
+
+import numpy as np
 import pandas as pd
 import requests
 import s3fs
 from hydrosdk.modelversion import ModelVersion
+
+
+class NumpyArrayEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return JSONEncoder.default(self, obj)
 
 
 def get_training_data(model: ModelVersion, s3_endpoint: str) -> pd.DataFrame:
