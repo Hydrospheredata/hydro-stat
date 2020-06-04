@@ -19,10 +19,13 @@ class FeatureReportFactory:
         unique_training_values = training_data.value_counts().shape[0]
 
         if unique_training_values / training_data.shape[0] <= 0.05 and unique_training_values <= 20:
+            logging.info(f"{feature_name} is selected as Categorical")
             return CategoricalFeatureReport(feature_name, training_data.values.astype("str"), production_data.values.astype("str"))
         elif feature_dtype in NUMERICAL_DTYPES:
+            logging.info(f"{feature_name} is selected as Numerical Continuous")
             return NumericalFeatureReport(feature_name, training_data.values, production_data.values)
         else:
+            logging.info(f"{feature_name} is a non-categorical string, ignoring it")
             return None
 
 
@@ -121,39 +124,44 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
 
         # List of tests used for comparing production and training categorical frequencies
         self.tests: List[StatisticalTest] = [
-            StatisticalTest("Chi-Squared", np.mean, stats.chisquare, ),
-            StatisticalTest("Unique Values", np.nonzero, CategoricalFeatureReport.__unique_values_test),
+            StatisticalTest("Chi-Squared", np.mean, self.__chisquare, ),
+            StatisticalTest("Unique Values", np.nonzero, self.__unique_values_test),
         ]
 
-    @classmethod
-    def __unique_values_test(cls, training_frequencies, production_frequencies):
-        if sum(training_frequencies[production_frequencies > 0 & training_frequencies == 0]) > 0:
+    def __unique_values_test(self, training_density, production_density):
+        # If we have categories with positive frequencies in production, but have no such categories in training
+        if sum((production_density > 0) & (training_density == 0)) > 0:
             return None, 0  # Definitely Changed
         else:
-            return None, 1  # Prob. Not changed
+            return None, 1  # Prob. not changed
+
+    def __chisquare(self, training_density, production_density):
+        production_sample_size = self.production_data.shape[0]
+        # ChiSquare test compares Observed Frequencies to Expected Frequencies, so we need to change arguments placement
+        return stats.chisquare(np.round(production_density * production_sample_size),
+                               np.round(training_density * production_sample_size))
 
     def _get_histogram(self):
         training_categories, t_counts = np.unique(self.training_data, return_counts=True)
         production_categories, p_counts = np.unique(self.production_data, return_counts=True)
 
+        # Calculate superset of categories
         common_categories = np.array(list(set(training_categories).union(set(production_categories))))
-        logging.info(f"Categories {common_categories}")
 
         production_category_to_count = dict(zip(production_categories, p_counts))
         training_category_to_count = dict(zip(training_categories, t_counts))
-        logging.info(f"production_category_to_count {production_category_to_count}")
 
+        # Calculate frequencies per category for training and production data
         training_counts_for_common_categories = np.array(
             [training_category_to_count.get(category, 0) for category in common_categories])
-
         production_counts_for_common_categories = np.array(
             [production_category_to_count.get(category, 0) for category in common_categories])
-        logging.info(f"production_counts_for_common_categories {production_counts_for_common_categories}")
 
-        # training_density = training_counts_for_common_categories / training_counts_for_common_categories.sum()
-        # production_density = production_counts_for_common_categories / production_counts_for_common_categories.sum()
+        # Normalise frequencies to density
+        training_density = training_counts_for_common_categories / training_counts_for_common_categories.sum()
+        production_density = production_counts_for_common_categories / production_counts_for_common_categories.sum()
 
-        return common_categories, training_counts_for_common_categories, production_counts_for_common_categories
+        return common_categories, training_density, production_density
 
     def process(self):
         super().process()
