@@ -60,8 +60,9 @@ class StatisticalFeatureReport(ABC):
 
     def get_warning(self) -> Optional:
         if self.drift_probability > 0.75:
+            changed_statistics = list(filter(None, [x.name for x in self.tests if x.has_changed]))
             return {"drift_probability_per_feature": self.drift_probability,
-                    "message": f"The feature {self.feature_name} has changed."}
+                    "message": f"The feature {self.feature_name} has drifted. Following statistics have changed: {changed_statistics}."}
 
     @abstractmethod
     def _get_histogram(self) -> Tuple[np.array, np.array, np.array]:

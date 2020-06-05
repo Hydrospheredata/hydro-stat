@@ -51,7 +51,8 @@ class StatisticalReport:
 
     def __warnings_report(self):
         feature_warnings = [feature_report.get_warning() for feature_report in self.feature_reports]
-        return list(filter(None, feature_warnings))
+        feature_warnings = list(filter(None, feature_warnings))
+        return {"final_decision": None, "report": feature_warnings}
 
     def __overall_drift(self):
         return np.mean([feature_report.drift_probability for feature_report in self.feature_reports])
