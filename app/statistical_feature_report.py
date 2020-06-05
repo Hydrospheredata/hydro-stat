@@ -70,7 +70,7 @@ class StatisticalFeatureReport(ABC):
 
         Returns
         -------
-        (bins, training values, production_values)
+        (bins, training PMF values, production PMF values)
         """
         pass
 
@@ -106,15 +106,18 @@ class NumericalFeatureReport(StatisticalFeatureReport):
         data_minimum = min(training_data.min(), deployment_data.min())
         data_maximum = max(training_data.max(), deployment_data.max())
 
+        # TODO define equiwidth bins for training data, and then 2 bins for [prod_min; train_min] and [train_max; prod_max] ???
         training_histogram, bin_edges = np.histogram(training_data,
                                                      bins='fd',
-                                                     density=True,
                                                      range=[data_minimum, data_maximum])
 
         deployment_histogram, _ = np.histogram(deployment_data,
                                                bins=bin_edges,
-                                               density=True,
                                                range=[data_minimum, data_maximum])
+
+        # Obtain PMF for binned features. np.hist returns PDF which could be less recognizable by non-data scientists
+        training_histogram = training_histogram / training_histogram.sum()
+        deployment_histogram = deployment_histogram / deployment_histogram.sum()
 
         return bin_edges, training_histogram, deployment_histogram
 
