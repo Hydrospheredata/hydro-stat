@@ -138,8 +138,8 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
     def __chisquare(self, training_density, production_density):
         production_sample_size = self.production_data.shape[0]
         # ChiSquare test compares Observed Frequencies to Expected Frequencies, so we need to change arguments placement
-        return stats.chisquare(np.round(production_density * production_sample_size),
-                               np.round(training_density * production_sample_size))
+        return stats.chisquare(np.round(production_density * production_sample_size) + 1,
+                               np.round(training_density * production_sample_size) + 1)
 
     def _get_histogram(self):
         training_categories, t_counts = np.unique(self.training_data, return_counts=True)

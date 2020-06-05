@@ -36,6 +36,7 @@ class StatisticalTest:
         self.test_p = None
 
     def process(self, training_data, production_data):
+
         self.training_statistic = self.statistic_func(training_data)
         self.production_statistic = self.statistic_func(production_data)
 
