@@ -8,6 +8,7 @@ from scipy import stats
 
 from config import NUMERICAL_DTYPES
 from statistical_test import StatisticalTest
+from test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, unique_values_test_message
 
 
 class FeatureReportFactory:
@@ -80,9 +81,9 @@ class NumericalFeatureReport(StatisticalFeatureReport):
 
         # List of tests used for comparing production and training numerical columns
         self.tests: List[StatisticalTest] = [
-            StatisticalTest("Mean", np.mean, stats.ttest_ind, {"equal_var": False}),
-            StatisticalTest("Median", np.median, stats.median_test, {"ties": "ignore"}),
-            StatisticalTest("Variance", np.var, stats.levene, {"center": "mean"}),
+            StatisticalTest("Mean", np.mean, stats.ttest_ind, mean_test_message, {"equal_var": False}),
+            StatisticalTest("Median", np.median, stats.median_test, median_test_message, {"ties": "ignore"}),
+            StatisticalTest("Variance", np.var, stats.levene, variance_test_message, {"center": "mean"}),
         ]
 
     def process(self):
@@ -124,8 +125,14 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
 
         # List of tests used for comparing production and training categorical frequencies
         self.tests: List[StatisticalTest] = [
-            StatisticalTest("Expected and observed frequencies", lambda x: np.round(x, 3), self.__chisquare, ),
-            StatisticalTest("Unique Values", lambda density: self.bins[np.nonzero(density)], self.__unique_values_test),
+            StatisticalTest("Category densities",
+                            lambda x: np.round(x, 3),
+                            self.__chisquare,
+                            chi_square_message),
+            StatisticalTest("Unique Values",
+                            lambda density: self.bins[np.nonzero(density)],
+                            self.__unique_values_test,
+                            unique_values_test_message),
         ]
 
     def __unique_values_test(self, training_density, production_density):

@@ -9,6 +9,7 @@ class StatisticalTest:
     def __init__(self, name: str,
                  statistic_func: Callable,
                  statistic_test_func: Callable,
+                 message_generation_func: Callable,
                  statistic_test_func_kwargs=None):
         """
         Parameters
@@ -16,11 +17,13 @@ class StatisticalTest:
         name - Name of the statistical test used
         statistic_func -  Function which is used to calculate tested statistic from np.array
         statistic_test_func - Function which is used to calculate (test_statistic, test_p) from 2 np.arrays
+        message_generation_func - Function which us used to produce a message to be displayed on the UI based on StatisticalTest object
         statistic_test_func_kwargs - kwargs passed to statistic_test_func
         """
 
         self.name = name
         self.has_changed = None
+        self.message_generation_func = message_generation_func
         self.message = None
 
         self.statistic_func = statistic_func
@@ -48,12 +51,8 @@ class StatisticalTest:
         else:
             self.test_statistic = test_statistic
             self.test_p = test_p
-            self.has_changed = test_p <= self.threshold
-
-            if self.has_changed:
-                self.message = f"Different at significance level = {self.threshold}"
-            else:
-                self.message = f"No significant difference at significance level = {self.threshold}"
+            self.has_changed = test_p < self.threshold
+            self.message = self.message_generation_func(self)
 
     def as_json(self):
         return {"has_changed": bool(self.has_changed),
