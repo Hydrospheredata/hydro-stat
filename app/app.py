@@ -13,7 +13,7 @@ from config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     SUPPORTED_DTYPES, BATCH_SIZE
 from statistical_report import StatisticalReport
 from utils import get_production_data, get_training_data
-import pandas as pd
+
 fileConfig("resources/logging_config.ini")
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
 app = Flask(__name__)
@@ -22,7 +22,7 @@ CORS(app)
 
 @app.route("/stat/health", methods=['GET'])
 def hello():
-    return "Hi! I am Domain Drift Service"
+    return "Hi! I am Drift Report Service"
 
 
 @app.route("/stat/buildinfo", methods=['GET'])
@@ -52,20 +52,20 @@ def is_model_supported(model_version: ModelVersion, subsample_size):
                                               params={"limit": 1, "offset": 0}).json()
     number_of_production_requests = production_data_aggregates['count']
     if number_of_production_requests == 0:
-        return False, "Upload production data before running hydro-stat"
+        return False, "Upload production data before analysing for data drift"
     elif number_of_production_requests * BATCH_SIZE < subsample_size:
-        return False, f"hydro-stat is available after {subsample_size} requests." \
+        return False, f"Drift report is available after {subsample_size} requests." \
                       f" Currently ({number_of_production_requests * BATCH_SIZE}/{subsample_size})"
 
     signature = model_version.contract.predict
 
     input_tensor_shapes = [tuple(map(lambda dim: dim.size, input_tensor.shape.dim)) for input_tensor in signature.inputs]
     if not all([shape == tuple() for shape in input_tensor_shapes]):
-        return False, "Only signatures with all scalar fields are supported"
+        return False, "Data Drift is available only for signatures with all scalar fields"
 
     input_tensor_dtypes = [input_tensor.dtype for input_tensor in signature.inputs]
     if not all([dtype in SUPPORTED_DTYPES for dtype in input_tensor_dtypes]):
-        return False, "Only signatures with numerical fields are supported"
+        return False, "Data Drift is available only for signatures with numerical and string fields"
 
     return True, "OK"
 
