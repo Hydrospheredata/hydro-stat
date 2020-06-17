@@ -1,4 +1,5 @@
 import json
+from itertools import product
 from typing import List
 
 import numpy as np
@@ -7,6 +8,14 @@ from hydrosdk.modelversion import ModelVersion
 
 from statistical_feature_report import StatisticalFeatureReport, FeatureReportFactory
 from utils import NumpyArrayEncoder
+
+
+def common_fields(signature, training_columns, production_columns):
+    field_names = [field.name for field in signature]
+    common_field_names = set(training_columns). \
+        intersection(set(field_names)). \
+        intersection(set(production_columns))
+    return [field for field in signature if field.name in common_field_names]
 
 
 class StatisticalReport:
@@ -18,18 +27,25 @@ class StatisticalReport:
         training_data.dropna(axis=1, how="all", inplace=True)
         production_data.dropna(axis=1, how="all", inplace=True)
 
-        # Select common input field names available both in model signature, training data and production data
-        input_fields_names = [field.name for field in model.contract.predict.inputs]
-        common_input_field_names = set(training_data.columns). \
-            intersection(set(input_fields_names)). \
-            intersection(set(production_data.columns))
-        common_input_fields = [field for field in model.contract.predict.inputs if field.name in common_input_field_names]
+        # Select common field names available both in model signature, training data and production data
+        common_input_fields = common_fields(model.contract.predict.inputs, training_data.columns, production_data.columns)
+        common_output_fields = common_fields(model.contract.predict.outputs, training_data.columns, production_data.columns)
 
-        feature_reports = [FeatureReportFactory.get_feature_report(field.name, field.dtype,
-                                                                   training_data[field.name],
-                                                                   production_data[field.name]) for field in common_input_fields]
+        input_feature_reports = [FeatureReportFactory.get_feature_report(field.name, field.dtype,
+                                                                         training_data[field.name],
+                                                                         production_data[field.name]) for field in common_input_fields]
 
-        self.feature_reports: List[StatisticalFeatureReport] = [x for x in feature_reports if x is not None]
+        output_feature_reports = [FeatureReportFactory.get_feature_report(field.name, field.dtype,
+                                                                          training_data[field.name],
+                                                                          production_data[field.name]) for field in common_output_fields]
+
+        input_feature_reports = list(filter(None, input_feature_reports))
+        output_feature_reports = list(filter(None, input_feature_reports))
+
+        # Combine inputs and outputs to create bivariate reports inside input feature reports
+        map(lambda x: x[0].combine(x[1]), product(input_feature_reports, output_feature_reports))
+
+        self.feature_reports: List[StatisticalFeatureReport] = input_feature_reports + output_feature_reports
 
     def process(self):
         [feature_report.process() for feature_report in self.feature_reports]

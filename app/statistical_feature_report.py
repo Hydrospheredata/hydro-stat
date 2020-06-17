@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from bivariate_feature_report import BivariateFeatureReport, BivariateReportFactory
 from config import NUMERICAL_DTYPES
 from statistical_test import StatisticalTest
 from test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, unique_values_test_message
@@ -47,6 +48,8 @@ class StatisticalFeatureReport(ABC):
         self.training_histogram_values = training_hist
         self.production_histogram_values = deployment_hist
 
+        self.bivariate_reports: List[BivariateFeatureReport] = []
+
     def process(self):
         logging.info(f"Calculating features for {self.feature_name}")
         pass
@@ -56,13 +59,28 @@ class StatisticalFeatureReport(ABC):
                 "histogram": {"bins": self.bins.tolist(),
                               "deployment": self.production_histogram_values.tolist(),
                               "training": self.training_histogram_values.tolist()},
-                "statistics": dict([(test.name, test.as_json()) for test in self.tests])}
+                "statistics": dict([(test.name, test.as_json()) for test in self.tests]),
+                "bivariate_reports": [r.as_json() for r in self.bivariate_reports]}
 
     def get_warning(self) -> Optional:
         if self.drift_probability > 0.75:
             changed_statistics = list(filter(None, [x.name for x in self.tests if x.has_changed]))
             return {"drift_probability_per_feature": self.drift_probability,
                     "message": f"The feature {self.feature_name} has drifted. Following statistics have changed: {changed_statistics}."}
+
+    def combine(self, another: 'StatisticalFeatureReport'):
+        """
+        Combine two statistical feature reports from features x1 and x2 respectively to calculate conditional
+        distribution X2|X1.
+
+        Parameters
+        ----------
+        another StatisticalFeatureReport
+
+        Returns
+        -------
+        """
+        self.bivariate_reports.append(BivariateReportFactory.get_feature_report(self, another))
 
     @abstractmethod
     def _get_histogram(self) -> Tuple[np.array, np.array, np.array]:
@@ -106,7 +124,6 @@ class NumericalFeatureReport(StatisticalFeatureReport):
         data_minimum = min(training_data.min(), deployment_data.min())
         data_maximum = max(training_data.max(), deployment_data.max())
 
-        # TODO define equiwidth bins for training data, and then 2 bins for [prod_min; train_min] and [train_max; prod_max] ???
         training_histogram, bin_edges = np.histogram(training_data,
                                                      bins='fd',
                                                      range=[data_minimum, data_maximum])
