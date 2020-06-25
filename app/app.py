@@ -9,10 +9,9 @@ from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
 from config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
-    PRODUCTION_SUBSAMPLE_SIZE, S3_ENDPOINT, \
-    SUPPORTED_DTYPES, BATCH_SIZE
+    PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, BATCH_SIZE, S3_ENDPOINT
 from statistical_report import StatisticalReport
-from utils import get_production_data, get_training_data
+from utils import get_training_data, get_production_data
 
 fileConfig("resources/logging_config.ini")
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
@@ -85,6 +84,7 @@ def get_metrics():
 
     try:
         cluster = Cluster(HTTP_UI_ADDRESS)
+        # cluster = Cluster("https://hydro-serving.dev.hydrosphere.io/")
         model = ModelVersion.find_by_id(cluster, model_version_id)
     except Exception as e:
         logging.error(f"Failed to connect to the cluster {HTTP_UI_ADDRESS} or find the model there. {e}")
@@ -93,7 +93,7 @@ def get_metrics():
     try:
         logging.info(f"Loading training data. model version id = {model_version_id}")
         training_data = get_training_data(model, S3_ENDPOINT)
-        # training_data = pd.read_csv("train.csv")
+        # training_data = pd.read_csv("training_data.csv")
     except Exception as e:
         logging.error(f"Failed during loading training data. {e}")
         return Response(status=500)
@@ -103,7 +103,7 @@ def get_metrics():
     try:
         logging.info(f"Loading production data. model version id = {model_version_id}")
         production_data = get_production_data(model, size=PRODUCTION_SUBSAMPLE_SIZE)
-        # production_data = pd.read_csv("train.csv")
+        # production_data = pd.read_csv("training_data.csv")
 
     except Exception as e:
         logging.error(f"Failed during loading production_data data. {e}")
@@ -115,7 +115,7 @@ def get_metrics():
         report = StatisticalReport(model, training_data, production_data)
         report.process()
     except Exception as e:
-        logging.error(f"Failed during computing statistics {e}")
+        logging.error(f"Failed during computing statistics {e} {e.__traceback__}")
         return Response(status=500)
 
     return jsonify(report.to_json())

@@ -40,10 +40,11 @@ class StatisticalReport:
                                                                           production_data[field.name]) for field in common_output_fields]
 
         input_feature_reports = list(filter(None, input_feature_reports))
-        output_feature_reports = list(filter(None, input_feature_reports))
+        output_feature_reports = list(filter(None, output_feature_reports))
 
         # Combine inputs and outputs to create bivariate reports inside input feature reports
-        map(lambda x: x[0].combine(x[1]), product(input_feature_reports, output_feature_reports))
+        for inp_f, out_f in product(input_feature_reports, output_feature_reports):
+            inp_f.combine(out_f)
 
         self.feature_reports: List[StatisticalFeatureReport] = input_feature_reports + output_feature_reports
 
