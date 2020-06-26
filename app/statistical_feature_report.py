@@ -4,6 +4,7 @@ from typing import List, Optional, Dict, Tuple
 
 import numpy as np
 import pandas as pd
+from hydro_serving_grpc.contract import CATEGORICAL, CONTINUOUS, ORDINAL, NOMINAL, NUMERICAL
 from scipy import stats
 from sklearn.preprocessing import KBinsDiscretizer, OrdinalEncoder
 
@@ -15,19 +16,36 @@ from test_messages import mean_test_message, median_test_message, variance_test_
 class FeatureReportFactory:
 
     @classmethod
-    def get_feature_report(cls, feature_name: str, feature_dtype, training_data: pd.Series,
-                           production_data: pd.Series) -> Optional['StatisticalFeatureReport']:
+    def get_feature_report(cls, feature_name: str,
+                           feature_dtype,
+                           training_data: pd.Series,
+                           production_data: pd.Series,
+                           feature_profile=None,
+                           infer_profile=True) -> Optional['StatisticalFeatureReport']:
 
-        unique_training_values = training_data.value_counts().shape[0]
-
-        if unique_training_values / training_data.shape[0] <= 0.05 and unique_training_values <= 20:
-            logging.info(f"{feature_name} is selected as Categorical")
+        if feature_profile in {CATEGORICAL, NOMINAL}:
+            logging.info(f"{feature_name} is specified as {feature_profile}, creating CategoricalReport for it")
             return CategoricalFeatureReport(feature_name, training_data.values.astype("str"), production_data.values.astype("str"))
-        elif feature_dtype in NUMERICAL_DTYPES:
-            logging.info(f"{feature_name} is selected as Numerical Continuous")
+        elif feature_profile in {NUMERICAL, CONTINUOUS}:
+            logging.info(f"{feature_name} is specified as {feature_profile}, creating NumericalReport for it")
             return NumericalFeatureReport(feature_name, training_data.values, production_data.values)
+        elif feature_profile == ORDINAL:
+            logging.info(f"{feature_name} is specified as {feature_profile}, Ordinal profiles are yet to be supported")
+            return None
+        elif feature_profile is None and infer_profile:
+            unique_training_values = training_data.value_counts().shape[0]
+            if unique_training_values / training_data.shape[0] <= 0.05 and unique_training_values <= 20:
+                logging.info(f"{feature_name} is inferred as Categorical")
+                return CategoricalFeatureReport(feature_name, training_data.values.astype("str"), production_data.values.astype("str"))
+            elif feature_dtype in NUMERICAL_DTYPES:
+                logging.info(f"{feature_name} is inferred as Numerical Continuous")
+                return NumericalFeatureReport(feature_name, training_data.values, production_data.values)
+            else:
+                logging.info(f"{feature_name} is a non-categorical string, ignoring it")
+                return None
         else:
-            logging.info(f"{feature_name} is a non-categorical string, ignoring it")
+            logging.info(f"{feature_name} profile is None or not supported and"
+                         f" automatic profile inference is turned off.")
             return None
 
 
