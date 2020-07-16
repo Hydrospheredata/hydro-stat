@@ -8,10 +8,11 @@ from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
-from config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
+from app.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, BATCH_SIZE, S3_ENDPOINT
-from statistical_report import StatisticalReport
-from utils import get_training_data, get_production_data
+from app.statistical_report import StatisticalReport
+from app.utils import get_training_data, get_production_data
+
 
 fileConfig("resources/logging_config.ini")
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
