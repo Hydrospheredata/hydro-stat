@@ -219,6 +219,10 @@ class NumericalFeatureReport(StatisticalFeatureReport):
         training_histogram, bin_edges = np.histogram(training_data,
                                                      bins='fd',
                                                      range=[data_minimum, data_maximum])
+        if len(bin_edges) > 40:
+            training_histogram, bin_edges = np.histogram(training_data,
+                                                         bins=40,
+                                                         range=[data_minimum, data_maximum])
 
         deployment_histogram, _ = np.histogram(deployment_data,
                                                bins=bin_edges,
