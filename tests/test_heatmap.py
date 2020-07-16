@@ -17,3 +17,7 @@ class TestHeatMapData:
         # Test that all values in a columns sums to 1
         x_sum = np.sum(h1.intensity, axis=0)
         assert all(x_sum == 1)
+
+    def test_h1_intensity(self, h1: HeatMapData):
+        true_values = np.array([[0, 0.5], [1, 0.5]])
+        assert np.all(h1.intensity == true_values)
