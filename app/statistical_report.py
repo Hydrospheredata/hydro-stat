@@ -18,14 +18,6 @@ def common_fields(signature, training_columns, production_columns):
     return [field for field in signature if field.name in common_field_names]
 
 
-def common_fields(signature, training_columns, production_columns):
-    field_names = [field.name for field in signature]
-    common_field_names = set(training_columns). \
-        intersection(set(field_names)). \
-        intersection(set(production_columns))
-    return [field for field in signature if field.name in common_field_names]
-
-
 class StatisticalReport:
 
     def __init__(self, model: ModelVersion, training_data: pd.DataFrame, production_data: pd.DataFrame):
