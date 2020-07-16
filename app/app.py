@@ -13,6 +13,7 @@ from app.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
 from app.statistical_report import StatisticalReport
 from app.utils import get_training_data, get_production_data
 
+
 fileConfig("resources/logging_config.ini")
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
 app = Flask(__name__)
