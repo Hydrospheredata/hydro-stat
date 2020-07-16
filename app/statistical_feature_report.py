@@ -8,9 +8,9 @@ from hydro_serving_grpc.contract import CATEGORICAL, CONTINUOUS, ORDINAL, NOMINA
 from scipy import stats
 from sklearn.preprocessing import KBinsDiscretizer, OrdinalEncoder
 
-from config import NUMERICAL_DTYPES
-from statistical_test import StatisticalTest
-from test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, unique_values_test_message
+from app.config import NUMERICAL_DTYPES
+from app.statistical_test import StatisticalTest
+from app.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, unique_values_test_message
 
 
 class FeatureReportFactory:
@@ -219,6 +219,8 @@ class NumericalFeatureReport(StatisticalFeatureReport):
         training_histogram, bin_edges = np.histogram(training_data,
                                                      bins='fd',
                                                      range=[data_minimum, data_maximum])
+
+        # Cap maximum number of histograms due to UI and human perception limitations
         if len(bin_edges) > 40:
             training_histogram, bin_edges = np.histogram(training_data,
                                                          bins=40,
@@ -324,10 +326,10 @@ class HeatMapData:
 
         # Computes heatmap density
         for ordinal_label_y, _ in enumerate(y_labels):
-            y_mask = y == ordinal_label_y
             for ordinal_label_x, _ in enumerate(x_labels):
                 x_mask = x == ordinal_label_x
-                intensity = np.round(np.logical_and(x_mask, y_mask).mean(), 4)
+                y_mask = y[x_mask] == ordinal_label_y
+                intensity = np.round(y_mask.mean(), 3)
                 intensity_list.append(intensity)
 
         self.intensity = np.array(intensity_list).reshape(len(y_labels), len(x_labels))
