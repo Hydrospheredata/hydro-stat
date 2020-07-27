@@ -8,29 +8,29 @@ from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
-from app.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
+from utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, BATCH_SIZE, S3_ENDPOINT
-from app.statistical_report import StatisticalReport
-from app.utils import get_training_data, get_production_data
+from statistical_report.statistical_report import StatisticalReport
+from utils.utils import get_training_data, get_production_data
 
 
 fileConfig("resources/logging_config.ini")
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
-app = Flask(__name__)
-CORS(app)
+flask_app = Flask(__name__)
+CORS(flask_app)
 
 
-@app.route("/stat/health", methods=['GET'])
+@flask_app.route("/stat/health", methods=['GET'])
 def hello():
     return "Hi! I am Drift Report Service"
 
 
-@app.route("/stat/buildinfo", methods=['GET'])
+@flask_app.route("/stat/buildinfo", methods=['GET'])
 def buildinfo():
     return jsonify(BUILD_INFO)
 
 
-@app.route("/stat/support", methods=['GET'])
+@flask_app.route("/stat/support", methods=['GET'])
 def model_support():
     try:
         model_version_id = int(request.args.get('model_version_id'))
@@ -70,7 +70,7 @@ def is_model_supported(model_version: ModelVersion, subsample_size):
     return True, "OK"
 
 
-@app.route("/stat/metrics", methods=["GET"])
+@flask_app.route("/stat/metrics", methods=["GET"])
 def get_metrics():
     possible_args = {"model_version_id"}
     if set(request.args.keys()) != possible_args:
@@ -122,7 +122,7 @@ def get_metrics():
     return jsonify(report.to_json())
 
 
-@app.route("/stat/config", methods=['GET', 'PUT'])
+@flask_app.route("/stat/config", methods=['GET', 'PUT'])
 def get_params():
     global THRESHOLD
     if request.method == 'GET':
@@ -146,6 +146,6 @@ def get_params():
 
 if __name__ == "__main__":
     if not DEBUG_ENV:
-        serve(app, host='0.0.0.0', port=HTTP_PORT)
+        serve(flask_app, host='0.0.0.0', port=HTTP_PORT)
     else:
-        app.run(debug=True, host='0.0.0.0', port=HTTP_PORT)
+        flask_app.run(debug=True, host='0.0.0.0', port=HTTP_PORT)

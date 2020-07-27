@@ -8,9 +8,9 @@ from hydro_serving_grpc.contract import CATEGORICAL, CONTINUOUS, ORDINAL, NOMINA
 from scipy import stats
 from sklearn.preprocessing import KBinsDiscretizer, OrdinalEncoder
 
-from app.config import NUMERICAL_DTYPES
-from app.statistical_test import StatisticalTest
-from app.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, unique_values_test_message
+from utils.config import NUMERICAL_DTYPES
+from statistical_report.statistical_test import StatisticalTest
+from statistical_report.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, unique_values_test_message
 
 
 class FeatureReportFactory:
