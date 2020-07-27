@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from app.statistical_feature_report import HeatMapData
+from statistical_report.statistical_feature_report import HeatMapData
 
 
 class TestHeatMapData:

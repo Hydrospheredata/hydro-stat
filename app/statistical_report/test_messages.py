@@ -1,4 +1,4 @@
-from app.statistical_test import StatisticalTest
+from statistical_report.statistical_test import StatisticalTest
 
 
 def threshold_to_apa_style(t: float):

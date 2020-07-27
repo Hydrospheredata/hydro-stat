@@ -1,6 +1,6 @@
 from typing import Callable
 
-from app.config import SIGNIFICANCE_LEVEL
+from utils.config import SIGNIFICANCE_LEVEL
 
 
 class StatisticalTest:
