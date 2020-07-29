@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import pytest
 
@@ -17,6 +19,17 @@ class TestHeatMapData:
         # Test that all values in a columns sums to 1
         x_sum = np.sum(h1.intensity, axis=0)
         assert all(x_sum == 1)
+
+    def test_adult_heatmaps_integrity(self, adult_heatmaps: List[HeatMapData]):
+        for h in adult_heatmaps:
+            # Test that all values in a columns sums to 1
+            print(h.x_title, h.y_title)
+            assert np.allclose(np.sum(h.intensity, axis=0).min(), 1, atol=1e2)
+
+    def test_no_nans(self, adult_heatmaps: List[HeatMapData]):
+        # Assert that there should be non Nones in a heatmap intensity values
+        for h in adult_heatmaps:
+            assert not np.isnan(np.min(h.intensity))
 
     def test_h1_intensity(self, h1: HeatMapData):
         true_values = np.array([[0, 0.5], [1, 0.5]])
