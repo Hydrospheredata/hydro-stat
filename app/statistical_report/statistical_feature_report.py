@@ -8,7 +8,7 @@ from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE,
     DT_UINT64
 from hydro_serving_grpc.contract import CATEGORICAL, CONTINUOUS, ORDINAL, NOMINAL, NUMERICAL
 from scipy import stats
-from sklearn.preprocessing import KBinsDiscretizer, OrdinalEncoder
+from sklearn.preprocessing import KBinsDiscretizer, LabelEncoder
 
 from statistical_report.statistical_test import StatisticalTest
 from statistical_report.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, \
@@ -29,24 +29,31 @@ class FeatureReportFactory:
 
         if feature_profile in {CATEGORICAL, NOMINAL}:
             logging.info(f"{feature_name} is specified as {feature_profile}, creating CategoricalReport for it")
-            return CategoricalFeatureReport(feature_name, training_data.values.astype("str"), production_data.values.astype("str"))
+            return CategoricalFeatureReport(feature_name, training_data.values, production_data.values)
+
         elif feature_profile in {NUMERICAL, CONTINUOUS}:
             logging.info(f"{feature_name} is specified as {feature_profile}, creating NumericalReport for it")
             return NumericalFeatureReport(feature_name, training_data.values, production_data.values)
+
         elif feature_profile == ORDINAL:
             logging.info(f"{feature_name} is specified as {feature_profile}, Ordinal profiles are yet to be supported")
             return None
+
         elif feature_profile is None and infer_profile:
             unique_training_values = training_data.value_counts().shape[0]
+
             if unique_training_values / training_data.shape[0] <= 0.05 and unique_training_values <= 20:
                 logging.info(f"{feature_name} is inferred as Categorical")
-                return CategoricalFeatureReport(feature_name, training_data.values.astype("str"), production_data.values.astype("str"))
+                return CategoricalFeatureReport(feature_name, training_data.values, production_data.values)
+
             elif feature_dtype in NUMERICAL_DTYPES:
                 logging.info(f"{feature_name} is inferred as Numerical Continuous")
                 return NumericalFeatureReport(feature_name, training_data.values, production_data.values)
+
             else:
                 logging.info(f"{feature_name} is a non-categorical string, ignoring it")
                 return None
+
         else:
             logging.info(f"{feature_name} profile is None or not supported and"
                          f" automatic profile inference is turned off.")
@@ -64,6 +71,7 @@ class BivariateReportFactory:
             labels, training_data, production_data = cls.__encode_categorical_report(feature_report)
         else:
             raise NotImplementedError(f"type {type(feature_report)} not supported")
+
         return labels, training_data, production_data
 
     @classmethod
@@ -95,11 +103,11 @@ class BivariateReportFactory:
 
         labels = feature_report.bins
 
-        encoder = OrdinalEncoder()
-        encoder.categories_ = np.array([labels])
+        encoder = LabelEncoder()
+        encoder.classes_ = np.array(labels)
 
-        training_data = encoder.transform(feature_report.training_data.reshape(-1, 1)).flatten()
-        production_data = encoder.transform(feature_report.production_data.reshape(-1, 1)).flatten()
+        training_data = encoder.transform(feature_report.training_data).flatten()
+        production_data = encoder.transform(feature_report.production_data).flatten()
 
         return labels, training_data, production_data
 
@@ -143,7 +151,10 @@ class StatisticalFeatureReport(ABC):
         self.training_histogram_values = training_hist
         self.production_histogram_values = deployment_hist
 
-        self.bivariate_reports: List = []
+        self.bivariate_reports: List[BivariateFeatureReport] = []
+
+    def __repr__(self):
+        return f"Feature Report for {self.feature_name}"
 
     def process(self):
         logging.info(f"Calculating features for {self.feature_name}")
@@ -277,6 +288,7 @@ class CategoricalFeatureReport(StatisticalFeatureReport):
 
         # Calculate superset of categories
         common_categories = np.array(list(set(training_categories).union(set(production_categories))))
+        common_categories.sort()
 
         production_category_to_count = dict(zip(production_categories, p_counts))
         training_category_to_count = dict(zip(training_categories, t_counts))
@@ -385,6 +397,9 @@ class BivariateFeatureReport:
         # if ordinal-ordinal, then KS-test is used
         # if categorical-categorical, then chisquare test is used
         self.drifted: bool = False
+
+    def __repr__(self):
+        return f"Feature Report for {self.f1_name}|{self.f2_name}"
 
     def process(self):
         # TODO calculate GOF here?

@@ -51,8 +51,7 @@ class TestHeatMapData:
         for h in adult_heatmaps:
             # Test that all values in a columns sums to 1
             print(h.x_title, h.y_title)
-            x_sum = np.sum(h.intensity, axis=0)
-            assert np.allclose(x_sum, 1, rtol=1e2)
+            assert np.allclose(np.sum(h.intensity, axis=0).min(), 1, atol=1e2)
 
     def test_no_nans(self, adult_heatmaps: List[HeatMapData]):
         # Assert that there should be non Nones in a heatmap intensity values
