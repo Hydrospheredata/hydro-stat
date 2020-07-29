@@ -4,13 +4,17 @@ from typing import List, Optional, Dict, Tuple
 
 import numpy as np
 import pandas as pd
+from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
+    DT_UINT64
 from hydro_serving_grpc.contract import CATEGORICAL, CONTINUOUS, ORDINAL, NOMINAL, NUMERICAL
 from scipy import stats
 from sklearn.preprocessing import KBinsDiscretizer, LabelEncoder
 
-from utils.config import NUMERICAL_DTYPES
 from statistical_report.statistical_test import StatisticalTest
-from statistical_report.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, unique_values_test_message
+from statistical_report.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, \
+    unique_values_test_message
+
+NUMERICAL_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
 
 
 class FeatureReportFactory:
@@ -340,8 +344,11 @@ class HeatMapData:
         for ordinal_label_y, _ in enumerate(y_labels):
             for ordinal_label_x, _ in enumerate(x_labels):
                 x_mask = x == ordinal_label_x
-                y_mask = y[x_mask] == ordinal_label_y
-                intensity = np.round(y_mask.mean(), 3)
+                if x_mask.sum() > 0:
+                    y_mask = y[x_mask] == ordinal_label_y
+                    intensity = np.round(y_mask.mean(), 3)
+                else:
+                    intensity = 0
                 intensity_list.append(intensity)
 
         self.intensity = np.array(intensity_list).reshape(len(y_labels), len(x_labels))
