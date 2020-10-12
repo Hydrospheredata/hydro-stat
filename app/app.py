@@ -59,7 +59,6 @@ def is_model_supported(model_version: ModelVersion, subsample_size):
                       f" Currently ({number_of_production_requests * batch_size}/{subsample_size})"
 
     signature = model_version.contract.predict
-
     input_tensor_shapes = [tuple(map(lambda dim: dim.size, input_tensor.shape.dim)) for input_tensor in signature.inputs]
     if not all([shape == tuple() for shape in input_tensor_shapes]):
         return False, "Data Drift is available only for signatures with all scalar fields"
