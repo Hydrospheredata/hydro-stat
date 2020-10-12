@@ -9,7 +9,7 @@ from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
 from utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
-    PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, BATCH_SIZE, S3_ENDPOINT
+    PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, S3_ENDPOINT
 from statistical_report.statistical_report import StatisticalReport
 from utils.utils import get_training_data, get_production_data
 
@@ -51,11 +51,12 @@ def is_model_supported(model_version: ModelVersion, subsample_size):
     production_data_aggregates = requests.get(f"{HTTP_UI_ADDRESS}/monitoring/checks/aggregates/{model_version.id}",
                                               params={"limit": 1, "offset": 0}).json()
     number_of_production_requests = production_data_aggregates['count']
+    batch_size = model_version.monitoring_configuration.batch_size
     if number_of_production_requests == 0:
         return False, "Upload production data before analysing for data drift"
-    elif number_of_production_requests * BATCH_SIZE < subsample_size:
+    elif number_of_production_requests * batch_size < subsample_size:
         return False, f"Drift report is available after {subsample_size} requests." \
-                      f" Currently ({number_of_production_requests * BATCH_SIZE}/{subsample_size})"
+                      f" Currently ({number_of_production_requests * batch_size}/{subsample_size})"
 
     signature = model_version.contract.predict
 
