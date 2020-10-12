@@ -19,8 +19,6 @@ hs_cluster = Cluster(HTTP_UI_ADDRESS)
 flask_app = Flask(__name__)
 CORS(flask_app)
 
-# logging.error(f"DEBUG ENV IS {os.getenv('DEBUG_ENV')}")
-
 if DEBUG_ENV:
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.DEBUG)
