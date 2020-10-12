@@ -1,11 +1,15 @@
 from json import JSONEncoder
-
 import numpy as np
 import pandas as pd
+import logging
 import requests
 import s3fs
 from hydrosdk.modelversion import ModelVersion
 
+
+class HealthEndpointFilter(logging.Filter):
+    def filter(self, record):
+        return not "/stat/health" in record.getMessage()
 
 class NumpyArrayEncoder(JSONEncoder):
     def default(self, obj):

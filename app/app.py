@@ -11,7 +11,7 @@ from waitress import serve
 from utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, BATCH_SIZE, S3_ENDPOINT
 from statistical_report.statistical_report import StatisticalReport
-from utils.utils import get_training_data, get_production_data
+from utils.utils import get_training_data, get_production_data, HealthEndpointFilter
 
 
 fileConfig("resources/logging_config.ini")
@@ -19,10 +19,19 @@ hs_cluster = Cluster(HTTP_UI_ADDRESS)
 flask_app = Flask(__name__)
 CORS(flask_app)
 
+# logging.error(f"DEBUG ENV IS {os.getenv('DEBUG_ENV')}")
+
+if DEBUG_ENV:
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.DEBUG)
+else:
+    log = logging.getLogger('waitress')
+    log.setLevel(logging.INFO)
+log.addFilter(HealthEndpointFilter())
 
 @flask_app.route("/stat/health", methods=['GET'])
 def hello():
-    return "Hi! I am Drift Report Service"
+    return "Hi! I am Drift Report Service!"
 
 
 @flask_app.route("/stat/buildinfo", methods=['GET'])
@@ -143,9 +152,9 @@ def get_params():
     else:
         return Response(status=405)
 
-
 if __name__ == "__main__":
-    if not DEBUG_ENV:
-        serve(flask_app, host='0.0.0.0', port=HTTP_PORT)
-    else:
+    if DEBUG_ENV:
         flask_app.run(debug=True, host='0.0.0.0', port=HTTP_PORT)
+    else:   
+        serve(flask_app, host='0.0.0.0', port=HTTP_PORT)
+        

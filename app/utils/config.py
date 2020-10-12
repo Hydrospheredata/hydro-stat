@@ -3,8 +3,9 @@ import os
 
 from hydro_serving_grpc import DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, \
     DT_UINT64, DT_STRING
+    
 
-DEBUG_ENV = bool(os.getenv("DEBUG_ENV", True))
+DEBUG_ENV = os.getenv("DEBUG_ENV") == "False"
 HTTP_PORT = int(os.getenv("HTTP_PORT", 5000))
 
 BATCH_SIZE = 10
