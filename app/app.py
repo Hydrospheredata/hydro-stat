@@ -29,7 +29,7 @@ log.addFilter(HealthEndpointFilter())
 
 @flask_app.route("/stat/health", methods=['GET'])
 def hello():
-    return "Hi! I am Drift Report Service!"
+    return Response(status=200)
 
 
 @flask_app.route("/stat/buildinfo", methods=['GET'])
