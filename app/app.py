@@ -12,7 +12,7 @@ from utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, BATCH_SIZE, S3_ENDPOINT
 from statistical_report.statistical_report import StatisticalReport
 from utils.utils import get_training_data, get_production_data, HealthEndpointFilter
-
+import os
 
 fileConfig("resources/logging_config.ini")
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
@@ -26,6 +26,7 @@ else:
     log = logging.getLogger('waitress')
     log.setLevel(logging.INFO)
 log.addFilter(HealthEndpointFilter())
+
 
 @flask_app.route("/stat/health", methods=['GET'])
 def hello():
