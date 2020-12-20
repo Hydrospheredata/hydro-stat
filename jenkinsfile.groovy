@@ -12,7 +12,7 @@ SERVICENAME = 'hydro-stat'
 SEARCHPATH = './requirements.txt'
 SEARCHSDK = 'hydrosdk'
 SEARCHGRPC = 'hydro-serving-grpc'
-REGISTRYURL = 'harbor.hydrosphere.io/hydro-test'
+REGISTRYURL = 'hydrosphere'
 GITHUBREPO  = "github.com/Hydrospheredata/hydro-stat.git"
 
 def checkoutRepo(String repo){
