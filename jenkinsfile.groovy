@@ -131,7 +131,7 @@ def releaseService(String xVersion, String yVersion){
 def buildDocker(){
     //run build command and store build tag 
     tagVersion = getVersion() 
-    sh script: "docker build -t hydrosphere/${SERVICENAME}:$tagVersion .", label: "Run build docker task";
+    sh script: "docker build -t hydrosphere/stat:$tagVersion .", label: "Run build docker task";
 }
 
 def pushDocker(String registryUrl, String dockerImage){
