@@ -220,11 +220,11 @@ node('hydrocentral') {
                     oldVersion = getVersion()
                     bumpVersion(getVersion(),params.newVersion,params.patchVersion,'version')
                     newVersion = getVersion()
+                    bumpGrpc(sdkVersion,SEARCHSDK, params.patchVersion,SEARCHPATH) 
+                    bumpGrpc(grpcVersion,SEARCHGRPC, params.patchVersion,SEARCHPATH) 
                 } else {
                     newVersion = getVersion()
                 }
-                bumpGrpc(sdkVersion,SEARCHSDK, params.patchVersion,SEARCHPATH) 
-                bumpGrpc(grpcVersion,SEARCHGRPC, params.patchVersion,SEARCHPATH) 
                 buildDocker()
                 pushDocker(REGISTRYURL, "stat:$newVersion")
                 //Update helm and docker-compose if release 
