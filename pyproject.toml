@@ -2,7 +2,7 @@
 name = "hydro-stat"
 version = "0.1.0"
 description = ""
-authors = ["Paul Mck <vixtir90@gmail.com>"]
+authors = ["hydrosphere.io"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
