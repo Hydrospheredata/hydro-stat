@@ -47,10 +47,9 @@ EXPOSE ${HTTP_PORT}
 
 HEALTHCHECK --start-period=10s CMD curl http://localhost:5000/stat/health
 
-COPY --from=build --chown=app:app buildinfo.json /app/buildinfo.json
+COPY --from=build --chown=app:app buildinfo.json /buildinfo.json
 
 COPY --from=build $VENV_PATH $VENV_PATH
 COPY . ./
-
 
 CMD python hydro_stat/app.py
