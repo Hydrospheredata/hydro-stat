@@ -28,6 +28,8 @@ RUN printf '{"name": "hydro-stat", "version":"%s", "gitHeadCommit":"%s","gitCurr
 
 FROM base as runtime
 
+
+
 RUN useradd -u 42069 --create-home --shell /bin/bash app
 USER app
 
@@ -45,9 +47,10 @@ EXPOSE ${HTTP_PORT}
 
 HEALTHCHECK --start-period=10s CMD curl http://localhost:5000/stat/health
 
-COPY --from=build --chown=app:app buildinfo.json /buildinfo.json
-
-COPY --from=build $VENV_PATH $VENV_PATH
+WORKDIR /app
 COPY . ./
+
+COPY --from=build --chown=app:app buildinfo.json /buildinfo.json
+COPY --from=build $VENV_PATH $VENV_PATH
 
 CMD python hydro_stat/app.py
