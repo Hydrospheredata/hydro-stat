@@ -14,14 +14,15 @@ from statistical_report.statistical_report import StatisticalReport
 from utils.utils import get_training_data, get_production_data, HealthEndpointFilter
 import os
 
-fileConfig("resources/logging_config.ini")
+fileConfig("hydro_stat/resources/logging_config.conf")
+
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
 flask_app = Flask(__name__)
 CORS(flask_app)
 
 if DEBUG_ENV:
     log = logging.getLogger('werkzeug')
-    log.setLevel(logging.DEBUG)
+    logging.setLevel(logging.DEBUG)
 else:
     log = logging.getLogger('waitress')
     log.setLevel(logging.INFO)

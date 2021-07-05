@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from hydrosdk import Cluster, ModelVersion
 
-from statistical_report.statistical_feature_report import HeatMapData
-from statistical_report.statistical_report import StatisticalReport
+from app.statistical_report.statistical_feature_report import HeatMapData
+from app.statistical_report.statistical_report import StatisticalReport
 
 c = Cluster("https://hydro-serving.dev.hydrosphere.io/")
 mv = ModelVersion.find_by_id(c, 902)
