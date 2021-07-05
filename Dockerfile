@@ -22,7 +22,7 @@ RUN poetry install --no-interaction --no-ansi -vvv
 
 
 COPY version version
-COPY .git .git
+COPY .git/ ./.git/
 RUN printf '{"name": "hydro-stat", "version":"%s", "gitHeadCommit":"%s","gitCurrentBranch":"%s", "pythonVersion":"%s"}\n' "$(cat version)" "$(git rev-parse HEAD)" "$(git rev-parse --abbrev-ref HEAD)" "$(python --version)" >> buildinfo.json
 
 
@@ -36,8 +36,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
 ENV UCF_FORCE_CONFOLD=1
 ENV PYTHONUNBUFFERED=1
-
-ENV PATH=/home/app/.local/bin:$PATH
 
 ENV DEBUG_ENV=False
 ENV HTTP_PORT=5000
