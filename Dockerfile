@@ -22,7 +22,7 @@ RUN poetry install --no-interaction --no-ansi -vvv
 
 
 COPY version version
-ADD .git ./.git
+ADD ./.git ./.git
 RUN printf '{"name": "hydro-stat", "version":"%s", "gitHeadCommit":"%s","gitCurrentBranch":"%s", "pythonVersion":"%s"}\n' "$(cat version)" "$(git rev-parse HEAD)" "$(git rev-parse --abbrev-ref HEAD)" "$(python --version)" >> buildinfo.json
 
 
