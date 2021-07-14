@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from sklearn.preprocessing import LabelEncoder
 
-from statistical_report.statistical_feature_report import HeatMapData
+from hydro_stat.statistical_report.statistical_feature_report import HeatMapData
 
 TEST_SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 

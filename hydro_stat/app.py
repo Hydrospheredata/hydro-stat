@@ -8,11 +8,10 @@ from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
-from utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
+from hydro_stat.utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, S3_ENDPOINT
-from statistical_report.statistical_report import StatisticalReport
-from utils.utils import get_training_data, get_production_data, HealthEndpointFilter
-import os
+from hydro_stat.statistical_report.statistical_report import StatisticalReport
+from hydro_stat.utils.utils import get_training_data, get_production_data, HealthEndpointFilter
 
 fileConfig("hydro_stat/resources/logging_config.conf")
 
@@ -22,7 +21,7 @@ CORS(flask_app)
 
 if DEBUG_ENV:
     log = logging.getLogger('werkzeug')
-    logging.setLevel(logging.DEBUG)
+    log.setLevel(logging.DEBUG)
 else:
     log = logging.getLogger('waitress')
     log.setLevel(logging.INFO)

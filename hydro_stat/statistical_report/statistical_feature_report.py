@@ -10,8 +10,8 @@ from hydro_serving_grpc.serving.contract.types_pb2 import CATEGORICAL, CONTINUOU
 from scipy import stats
 from sklearn.preprocessing import KBinsDiscretizer, LabelEncoder
 
-from statistical_report.statistical_test import StatisticalTest
-from statistical_report.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, \
+from hydro_stat.statistical_report.statistical_test import StatisticalTest
+from hydro_stat.statistical_report.test_messages import mean_test_message, median_test_message, variance_test_message, chi_square_message, \
     unique_values_test_message
 
 NUMERICAL_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
