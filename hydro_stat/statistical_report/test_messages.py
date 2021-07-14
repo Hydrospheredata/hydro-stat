@@ -1,4 +1,4 @@
-from statistical_report.statistical_test import StatisticalTest
+from hydro_stat.statistical_report.statistical_test import StatisticalTest
 
 
 def threshold_to_apa_style(t: float):

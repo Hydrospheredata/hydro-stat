@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from hydrosdk.modelversion import ModelVersion
 
-from statistical_report.statistical_feature_report import StatisticalFeatureReport, FeatureReportFactory
-from utils.utils import NumpyArrayEncoder
+from hydro_stat.statistical_report.statistical_feature_report import StatisticalFeatureReport, FeatureReportFactory
+from hydro_stat.utils.utils import NumpyArrayEncoder
 
 
 def common_fields(signature, training_columns, production_columns):

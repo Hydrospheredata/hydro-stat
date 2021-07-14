@@ -8,13 +8,13 @@ from hydrosdk.cluster import Cluster
 from hydrosdk.modelversion import ModelVersion
 from waitress import serve
 
-from utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
+from hydro_stat.utils.config import BUILD_INFO, DEBUG_ENV, HTTP_UI_ADDRESS, HTTP_PORT, \
     PRODUCTION_SUBSAMPLE_SIZE, SUPPORTED_DTYPES, S3_ENDPOINT
-from statistical_report.statistical_report import StatisticalReport
-from utils.utils import get_training_data, get_production_data, HealthEndpointFilter
-import os
+from hydro_stat.statistical_report.statistical_report import StatisticalReport
+from hydro_stat.utils.utils import get_training_data, get_production_data, HealthEndpointFilter
 
-fileConfig("resources/logging_config.ini")
+fileConfig("hydro_stat/resources/logging_config.conf")
+
 hs_cluster = Cluster(HTTP_UI_ADDRESS)
 flask_app = Flask(__name__)
 CORS(flask_app)

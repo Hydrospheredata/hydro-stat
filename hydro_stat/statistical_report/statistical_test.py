@@ -1,6 +1,6 @@
 from typing import Callable
 
-from utils.config import SIGNIFICANCE_LEVEL
+from hydro_stat.utils.config import SIGNIFICANCE_LEVEL
 
 
 class StatisticalTest:
