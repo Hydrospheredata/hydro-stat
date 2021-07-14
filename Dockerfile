@@ -17,12 +17,12 @@ RUN python -m venv $VENV_PATH
 RUN poetry config virtualenvs.create false
 RUN poetry config experimental.new-installer false
 
-COPY poetry.lock pyproject.toml ./
+
+COPY . ./
 RUN poetry install --no-interaction --no-ansi -vvv
 
 
 COPY version version
-COPY . ./
 RUN printf '{"name": "hydro-stat", "version":"%s", "gitHeadCommit":"%s","gitCurrentBranch":"%s", "pythonVersion":"%s"}\n' "$(cat version)" "$(git rev-parse HEAD)" "$(git rev-parse --abbrev-ref HEAD)" "$(python --version)" >> buildinfo.json
 
 
@@ -53,4 +53,4 @@ COPY . ./
 COPY --from=build --chown=app:app buildinfo.json /buildinfo.json
 COPY --from=build $VENV_PATH $VENV_PATH
 
-CMD python hydro_stat/app.py
+CMD python -m hydro_stat.app

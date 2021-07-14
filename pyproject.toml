@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hydro-stat"
+name = "hydro_stat"
 version = "0.1.0"
 description = "Service for detecting domain drifts between training and production data using featurewise statistics."
 authors = ["hydrosphere.io"]
