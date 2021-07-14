@@ -200,23 +200,28 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git commit -m "Releasing ${{ env.IMAGE }}:${{ env.VERSION }}" -a
           git push
-          
-      - name: Tag commit
+           
+      - name: Reports
+        id: generate-output
+        run: echo "::set-output name=tag-output::${{ env.VERSION }}"
+
+      - name: Create github release
         if: github.event_name == 'workflow_dispatch'
-        run: "git tag ${{ env.VERSION }}"
-        
-      - name: Push tag
-        if: github.event_name == 'workflow_dispatch'
-        run: "git push --tags"
-        
-  Status:
-    runs-on: ubuntu-latest
-    needs: [Build_and_publish]
-    if: always()
-    steps:
-      - uses: martialonline/workflow-status@v2
-        id: check
-      - run: |
-          echo "release status: ${{  steps.check.outputs.status  }}"
-        
-      
+        uses: meeDamian/github-release@2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.VERSION }}
+
+      # Update docker compose and helm only for merge-request 
+      - name: Update image version in hydro-serving repo
+        uses: aurelien-baudet/workflow-dispatch@v2.1.1
+        if: github.event_name == 'push'
+        with:
+          workflow: Local release
+          token: ${{ secrets.HYDRO_SERVING_TOKEN }}
+          repo: ${{ env.HYDRO_SERVING_REPO }}
+          inputs: '{"service_image_name":"${{ env.IMAGE }}", "registry_url":"${{ env.REGISTRY }}", "tag":"${{ env.VERSION }}"}'
+
+    outputs:
+      tag: ${{ steps.generate-output.outputs.tag-output }}
+      grpc_version: ${{ env.GRPC_VERSION }}
