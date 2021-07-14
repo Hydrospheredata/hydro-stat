@@ -28,8 +28,8 @@ class StatisticalReport:
         production_data.dropna(axis=1, how="all", inplace=True)
 
         # Select common field names available both in model signature, training data and production data
-        common_input_fields = common_fields(model.contract.predict.inputs, training_data.columns, production_data.columns)
-        common_output_fields = common_fields(model.contract.predict.outputs, training_data.columns, production_data.columns)
+        common_input_fields = common_fields(model.signature.inputs, training_data.columns, production_data.columns)
+        common_output_fields = common_fields(model.signature.outputs, training_data.columns, production_data.columns)
 
         input_feature_reports = [FeatureReportFactory.get_feature_report(field.name, field.dtype,
                                                                          training_data[field.name],
