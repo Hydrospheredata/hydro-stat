@@ -212,16 +212,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.VERSION }}
 
-      # Update docker compose and helm only for merge-request 
-      - name: Update image version in hydro-serving repo
-        uses: aurelien-baudet/workflow-dispatch@v2.1.1
-        if: github.event_name == 'push'
-        with:
-          workflow: Local release
-          token: ${{ secrets.HYDRO_SERVING_TOKEN }}
-          repo: ${{ env.HYDRO_SERVING_REPO }}
-          inputs: '{"service_image_name":"${{ env.IMAGE }}", "registry_url":"${{ env.REGISTRY }}", "tag":"${{ env.VERSION }}"}'
-
     outputs:
       tag: ${{ steps.generate-output.outputs.tag-output }}
       grpc_version: ${{ env.GRPC_VERSION }}
