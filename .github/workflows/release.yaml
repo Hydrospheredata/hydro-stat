@@ -214,4 +214,4 @@ jobs:
 
     outputs:
       tag: ${{ steps.generate-output.outputs.tag-output }}
-      grpc_version: ${{ env.GRPC_VERSION }}
+      sdk_version: ${{ env.SDK_VERSION }}
