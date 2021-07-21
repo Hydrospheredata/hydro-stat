@@ -4,6 +4,7 @@ ENV POETRY_PATH=/opt/poetry \
     POETRY_VERSION=1.1.6
 ENV PATH="$POETRY_PATH/bin:$VENV_PATH/bin:$PATH"
 
+
 FROM base AS build
 
 RUN apt-get update && \
@@ -11,24 +12,20 @@ RUN apt-get update && \
     git \ 
     curl
 
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-RUN mv /root/.poetry $POETRY_PATH
-RUN python -m venv $VENV_PATH
-RUN poetry config virtualenvs.create false
-RUN poetry config experimental.new-installer false
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python && \
+    mv /root/.poetry $POETRY_PATH && \
+    python -m venv $VENV_PATH && \
+    poetry config virtualenvs.create false && \
+    poetry config experimental.new-installer false
 
 
 COPY . ./
 RUN poetry install --no-interaction --no-ansi -vvv
 
-
-COPY version version
 RUN printf '{"name": "hydro-stat", "version":"%s", "gitHeadCommit":"%s","gitCurrentBranch":"%s", "pythonVersion":"%s"}\n' "$(cat version)" "$(git rev-parse HEAD)" "$(git rev-parse --abbrev-ref HEAD)" "$(python --version)" >> buildinfo.json
 
 
 FROM base as runtime
-
-
 
 RUN useradd -u 42069 --create-home --shell /bin/bash app
 USER app
@@ -48,9 +45,9 @@ EXPOSE ${HTTP_PORT}
 HEALTHCHECK --start-period=10s CMD curl http://localhost:5000/stat/health
 
 WORKDIR /app
-COPY . ./
+COPY --chown=app:app . ./
 
-COPY --from=build --chown=app:app buildinfo.json /buildinfo.json
+COPY --from=build --chown=app:app buildinfo.json buildinfo.json
 COPY --from=build $VENV_PATH $VENV_PATH
 
 CMD python -m hydro_stat.app
