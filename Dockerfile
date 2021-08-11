@@ -10,6 +10,11 @@ ENV PATH="$POETRY_PATH/bin:$VENV_PATH/bin:$PATH"
 
 FROM base AS build
 
+# # non-interactive env vars https://bugs.launchpad.net/ubuntu/+source/ansible/+bug/1833013
+# ENV DEBIAN_FRONTEND=noninteractive \
+#     DEBCONF_NONINTERACTIVE_SEEN=true \
+#     UCF_FORCE_CONFOLD=1
+
 RUN apt-get update && \
     apt-get install -y -q build-essential \
     curl \
@@ -21,7 +26,7 @@ RUN apt-get update && \
     poetry config experimental.new-installer false && \
     rm -rf /var/lib/apt/lists/*
 
-COPY poetry.lock pyproject.toml ./
+COPY poetry.lock pyproject.toml .git version ./
 RUN poetry install --no-interaction --no-ansi -vvv
 
 RUN printf '{"name": "hydro-stat", "version":"%s", "gitHeadCommit":"%s","gitCurrentBranch":"%s", "pythonVersion":"%s"}\n' "$(cat version)" "$(git rev-parse HEAD)" "$(git rev-parse --abbrev-ref HEAD)" "$(python --version)" >> buildinfo.json
@@ -32,12 +37,7 @@ FROM base as runtime
 RUN useradd -u 42069 --create-home --shell /bin/bash app
 USER app
 
-# non-interactive env vars https://bugs.launchpad.net/ubuntu/+source/ansible/+bug/1833013
-ENV DEBIAN_FRONTEND=noninteractive \
-    DEBCONF_NONINTERACTIVE_SEEN=true \
-    UCF_FORCE_CONFOLD=1 \
-    \
-    DEBUG_ENV=False \
+ENV DEBUG_ENV=False \
     HTTP_PORT=5000 \
     STAT_DB_NAME=hydrostat
 
