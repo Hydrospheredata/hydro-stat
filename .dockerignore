@@ -19,4 +19,8 @@ coverage.xml
 *,cover
 *.log
 tests/
+.gitignore
+Dockerfile*
+.github
+jenkinsfile.disable.groovy
 README.md
