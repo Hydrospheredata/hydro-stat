@@ -47,4 +47,6 @@ def get_production_data(model: ModelVersion, size=1000) -> pd.DataFrame:
     if not r_json:
         raise ValueError("Production data not found in request body")
 
-    return pd.DataFrame.from_dict(r_json)
+    checksWithoutError = list(filter(lambda x: x.get('_hs_error') == None, r_json))
+
+    return pd.DataFrame.from_dict(checksWithoutError)
