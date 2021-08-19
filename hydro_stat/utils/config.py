@@ -13,8 +13,10 @@ PRODUCTION_SUBSAMPLE_SIZE = 400
 NUMERICAL_DTYPES = {DT_INT64, DT_INT32, DT_INT16, DT_INT8, DT_DOUBLE, DT_FLOAT, DT_HALF, DT_UINT8, DT_UINT16, DT_UINT32, DT_UINT64}
 SUPPORTED_DTYPES = NUMERICAL_DTYPES.union({DT_STRING, })
 
-with open("buildinfo.json") as buildinfo_file:
-    BUILD_INFO = json.load(buildinfo_file)
+try:
+    BUILD_INFO = json.load(open("buildinfo.json"))
+except FileNotFoundError:
+    BUILD_INFO = json.loads("{}")
 
 SIGNIFICANCE_LEVEL = 0.01
 
