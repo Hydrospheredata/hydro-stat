@@ -7,7 +7,11 @@ ENV PYTHONUNBUFFERED=1 \
     VENV_PATH=/opt/venv \
     POETRY_VERSION=1.1.6 
 ENV PATH="$POETRY_PATH/bin:$VENV_PATH/bin:$PATH"
-RUN apt-get update && apt-get install -y -q curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends\
+    curl \
+    libssl1.1>=1.1.1k-1+deb11u1 \
+    openssl>=1.1.1k-1+deb11u1 && \
+    rm -rf /var/lib/apt/lists/*
 
 
 FROM base AS build
